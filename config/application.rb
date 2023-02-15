@@ -16,7 +16,16 @@ module CoptonRails
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    config.active_record.schema_format = :sql
+    config.railties_order = [:main_app, Msip::Engine, :all]
+
+    config.time_zone = 'America/Bogota'
+    config.i18n.default_locale = :es
+
+    config.x.formato_fecha = ENV.fetch('MSIP_FORMATO_FECHA', 'dd/M/yyyy')
+    config.hosts.concat(
+      ENV.fetch('CONFIG_HOSTS', '127.0.0.1').downcase.split(',')
+    )
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Only loads a smaller set of middleware suitable for API only apps.
