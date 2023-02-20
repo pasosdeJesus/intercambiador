@@ -20,6 +20,8 @@ Rails.application.routes.draw do
       end
     end
     devise_for :usuarios, :skip => [:registrations], module: :devise
+  
+    resources :anuncios
 
     root 'msip/hogar#index'
   end  # scope
