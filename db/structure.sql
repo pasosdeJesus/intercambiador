@@ -210,6 +210,41 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: anuncio; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.anuncio (
+    id bigint NOT NULL,
+    ton double precision,
+    margenflotante double precision,
+    limiteinferior double precision,
+    maximotiempo integer,
+    usuario_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: anuncio_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.anuncio_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: anuncio_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.anuncio_id_seq OWNED BY public.anuncio.id;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1516,6 +1551,13 @@ CREATE TABLE public.usuario (
 
 
 --
+-- Name: anuncio id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.anuncio ALTER COLUMN id SET DEFAULT nextval('public.anuncio_id_seq'::regclass);
+
+
+--
 -- Name: msip_bitacora id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1661,6 +1703,14 @@ ALTER TABLE ONLY public.msip_vereda ALTER COLUMN id SET DEFAULT nextval('public.
 
 ALTER TABLE ONLY public.msip_anexo
     ADD CONSTRAINT anexo_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: anuncio anuncio_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.anuncio
+    ADD CONSTRAINT anuncio_pkey PRIMARY KEY (id);
 
 
 --
@@ -2000,6 +2050,13 @@ ALTER TABLE ONLY public.usuario
 
 
 --
+-- Name: index_anuncio_on_usuario_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_anuncio_on_usuario_id ON public.anuncio USING btree (usuario_id);
+
+
+--
 -- Name: index_msip_orgsocial_on_grupoper_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2231,6 +2288,14 @@ ALTER TABLE ONLY public.msip_grupo_usuario
 
 ALTER TABLE ONLY public.msip_departamento
     ADD CONSTRAINT fk_rails_92093de1a1 FOREIGN KEY (id_pais) REFERENCES public.msip_pais(id);
+
+
+--
+-- Name: anuncio fk_rails_94c1f822d7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.anuncio
+    ADD CONSTRAINT fk_rails_94c1f822d7 FOREIGN KEY (usuario_id) REFERENCES public.usuario(id);
 
 
 --
@@ -2539,6 +2604,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20221211141207'),
 ('20221211141208'),
 ('20221211141209'),
-('20221212021533');
+('20221212021533'),
+('20230215184937');
 
 
