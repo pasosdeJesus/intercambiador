@@ -21,17 +21,17 @@ export function useTonConnect(): { sender: Sender; connected: boolean, depura: a
     },
     connected: tonConnectUI.connected,
     depura: async () => {
-	    const walletsList = await tonConnectUI.connector.getWallets();
-	    debugger
+      //const walletsList = await tonConnectUI.connector.getWallets();
+      //debugger
     },
     reporta: () => {
-	    tonConnectUI.connector.onStatusChange(
-		    walletInfo => {
-			    // Llamada (varias veces) cuando se conecta o
-			    // desconecta
-			    console.log('Connection status:', walletInfo);
-		    }
-	    )
+      tonConnectUI.connector.onStatusChange(
+        walletInfo => {
+          // Llamada (varias veces) cuando se conecta o
+          // desconecta
+          console.log('Connection status:', walletInfo);
+        }
+      )
     },
   };
 }

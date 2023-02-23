@@ -20,25 +20,25 @@ class Ability  < Msip::Ability
     #   https://github.com/ryanb/cancan/wiki/Defining-Abilities
 
     # Sin autenticación puede consultarse información geográfica
-    can :read, [Msip::Pais, Msip::Departamento, Msip::Municipio, Msip::Clase]
+    #can :read, [Msip::Pais, Msip::Departamento, Msip::Municipio, Msip::Clase]
     # No se autorizan usuarios con fecha de deshabilitación
-    if !usuario || usuario.fechadeshabilitacion
-      return
-    end
-    can :contar, Msip::Ubicacion
-    can :buscar, Msip::Ubicacion
-    can :lista, Msip::Ubicacion
-    can :descarga_anexo, Msip::Anexo
-    can :nuevo, Msip::Ubicacion
-    if usuario && usuario.rol then
-      case usuario.rol
-      when Ability::ROLANALI
-        can :read, Msip::Orgsocial
-        can :read, Msip::Persona
-        can :read, Msip::Ubicacion
-        can :new, Msip::Ubicacion
-        can [:update, :create, :destroy], Msip::Ubicacion
-      when Ability::ROLADMIN
+#    if !usuario || usuario.fechadeshabilitacion
+#      return
+#    end
+#    can :contar, Msip::Ubicacion
+#    can :buscar, Msip::Ubicacion
+#    can :lista, Msip::Ubicacion
+#    can :descarga_anexo, Msip::Anexo
+#    can :nuevo, Msip::Ubicacion
+#    if usuario && usuario.rol then
+#      case usuario.rol
+#      when Ability::ROLANALI
+#        can :read, Msip::Orgsocial
+#        can :read, Msip::Persona
+#        can :read, Msip::Ubicacion
+#        can :new, Msip::Ubicacion
+#        can [:update, :create, :destroy], Msip::Ubicacion
+#      when Ability::ROLADMIN
         can :manage, Msip::Orgsocial
         can :manage, Msip::Persona
         can :manage, Msip::Respaldo7z
@@ -49,8 +49,8 @@ class Ability  < Msip::Ability
           c = Ability.tb_clase(t)
           can :manage, c
         end
-      end
-    end
+#      end
+#    end
   end # def initialize
 
 end

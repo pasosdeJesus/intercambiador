@@ -1,7 +1,23 @@
 require "test_helper"
 
 class AnuncioTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+
+  test "valido" do
+    intervalo = Intervalo.create PRUEBA_INTERVALO
+    assert intervalo.valid?
+    intervalo.destroy
+  end
+
+  test "no valido" do
+    intervalo = Intervalo.new PRUEBA_INTERVALO
+    intervalo.nombre = ''
+    assert_not intervalo.valid?
+    intervalo.destroy
+  end
+
+  test "existente" do
+    intervalo = Sivel2Gen::Intervalo.where(id: 1).take
+    assert_equal "MADRUGADA", intervalo.nombre
+  end
+
 end

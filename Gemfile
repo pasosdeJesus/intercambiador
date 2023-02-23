@@ -33,8 +33,8 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 
 #### Motores que sobrecargan o basados en MSIP en orden de apilamento
 gem "msip",                       # SI estilo Pasos de Jesús
-  #git: "https://gitlab.com/pasosdeJesus/msip.git"
-  path: "../msip"
+  git: "https://gitlab.com/pasosdeJesus/msip.git"
+  #path: "../msip"
 
 
 

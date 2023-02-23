@@ -8,8 +8,10 @@ function App() {
   const { connected, depura, reporta } = useTonConnect();
   const { value, address, sendIncrement } = useCounterContract();
 
-  /*depura(); */
-  reporta(); 
+  const tonProofPayloadPromise = null; //getTonProofFromYourBackend();
+  //https://github.com/ton-connect/sdk/tree/main/packages/ui-react
+  //depura();
+  reporta();
   
   return (
     <div className="App">
