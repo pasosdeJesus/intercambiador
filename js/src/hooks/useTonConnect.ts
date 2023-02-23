@@ -25,13 +25,13 @@ export function useTonConnect(): { sender: Sender; connected: boolean, depura: a
       //debugger
     },
     reporta: () => {
-      tonConnectUI.connector.onStatusChange(
-        walletInfo => {
+//      tonConnectUI.connector.onStatusChange(
+//        walletInfo => {
           // Llamada (varias veces) cuando se conecta o
           // desconecta
-          console.log('Connection status:', walletInfo);
-        }
-      )
+//          console.log('Connection status:', walletInfo);
+//        }
+//      )
     },
   };
 }
