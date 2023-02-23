@@ -4,11 +4,20 @@ import App from './App'
 import './index.css'
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
-const manifestUrl = 'https://copton.pasosdeJesus.org/tonconnect-manifest.json';
+const manifestUrl = 'https://intercambiador.pasosdeJesus.org/tonconnect-manifest.json';
 
+console.log("inicializa?");
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <TonConnectUIProvider manifestUrl={manifestUrl}>
+  <TonConnectUIProvider 
+    manifestUrl={manifestUrl}
+    /*getConnectParameters={async () => {
+        const tonProof = await tonProofPayloadPromise; // will be executed every time when wallets modal is opened. It is recommended to make an http-request in advance
+        return {
+          tonProof
+        };
+    }} */
+  >
     <App />
   </TonConnectUIProvider>,
 )
