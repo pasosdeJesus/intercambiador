@@ -1,8 +1,17 @@
-import { useTonConnectUI } from '@tonconnect/ui-react';
+import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
+import { CHAIN } from "@tonconnect/protocol";
 import { Sender, SenderArguments } from 'ton-core';
 
-export function useTonConnect(): { sender: Sender; connected: boolean, depura: any, reporta: any} {
+export function useTonConnect(): { 
+  sender: Sender;
+  connected: boolean;
+  wallet: string | null;
+  network: CHAIN | null;
+  depura: any;
+  reporta: any;
+} {
   const [tonConnectUI] = useTonConnectUI();
+  const wallet = useTonWallet(); 
 
   return {
     sender: {
@@ -19,7 +28,9 @@ export function useTonConnect(): { sender: Sender; connected: boolean, depura: a
         });
       },
     },
-    connected: tonConnectUI.connected,
+    connected: !!wallet?.account.address,
+    wallet: wallet?.account.address ?? null,
+    network: wallet?.account.chain ?? null,
     depura: async () => {
       //const walletsList = await tonConnectUI.connector.getWallets();
       //debugger
