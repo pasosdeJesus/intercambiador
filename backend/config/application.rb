@@ -32,5 +32,9 @@ module CoptonRails
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = ENV.fetch('MSIP_API', true)
+
+    config.x.origen_cors = ENV.fetch('ORIGEN_CORS','').split(',')
+    puts "config.x.origen_cors=#{config.x.origen_cors.inspect}"
+
   end
 end
