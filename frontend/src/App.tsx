@@ -2,47 +2,32 @@ import './App.css'
 import { TonConnectButton } from '@tonconnect/ui-react';
 import { useTonConnect } from './hooks/useTonConnect';
 import { useCounterContract } from './hooks/useCounterContract'; 
+import { CHAIN } from "@tonconnect/protocol";
+import { Counter } from "./components/Counter";
+import { AdsList } from "./components/AdsList";
+import { ExampleQueryGithub } from "./components/ExampleQueryGithub";
 
 function App() {
 
-  const { connected, depura, reporta } = useTonConnect();
-  const { value, address, sendIncrement } = useCounterContract();
+  const { connected, network, wallet, depura, reporta } = useTonConnect();
 
-  const tonProofPayloadPromise = null; //getTonProofFromYourBackend();
-  //https://github.com/ton-connect/sdk/tree/main/packages/ui-react
-  //depura();
-  reporta();
-  
   return (
     <div className="App">
       <div className="encabezado">
         <img src="/logo.png" className="logo" alt="Intercambiador COP - TON" />
         <h1>Intercambiador COP - TON</h1>
       </div>
-      <div className="derecha">
+      <div className="derecha" style={{display: 'flex', flexDirection: 'column', flexAlign: "flex-end"}}>
         <TonConnectButton />
-      </div>
-      <div className="Container">
-        <div className='Card'>
-          <b>Dirección del contador</b>
-          <div className='Hint'>{address?.slice(0, 30) + '...'}</div>
-        </div>
-
-        <div className='Card'>
-          <b>Valor del Contador</b>
-          <div>{value ?? 'Cargando...'}</div>
+        <div className="network" style={{display: 'block'}}>
+          {network ? (network === CHAIN.MAINNET ? "mainnet" : "testnet") : 
+            "N/D"
+          }
         </div>
       </div>
-
-      <a className={`Button ${connected ? 'Active' : 'Disabled'}`}
-        onClick={() => {
-          sendIncrement();
-        }}
-      >
-       Increment
-      </a>
+      <AdsList />
     </div>
   );
 }
 
-export default App
+export default App;
