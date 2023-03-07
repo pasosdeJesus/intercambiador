@@ -1,36 +1,35 @@
-//import { useAdsList } from '../hooks/useAdsList'; 
-import { useTonConnect } from '../hooks/useTonConnect';
-
+//import { useTonConnect } from '../hooks/useTonConnect';
 import React from "react";
 import { useQuery } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import axios from "axios";
-
+import { CHAIN } from "@tonconnect/protocol";
 import { Ad } from "./Ad";
 
 export function AdsList () {
-  const { connected, network, wallet, depura, reporta } = useTonConnect();
+//  const { connected, network, wallet, depura, reporta } = useTonConnect();
 
+  const connected = false; /* OJO remplazar */
   const { isLoading, error, data, isFetching } = useQuery("repoData", () =>
     axios.get(
       "https://intercambiador.pasosdejesus.org:3443/anuncios.json"
     ).then((res) => res.data)
   );
 
-  if (isLoading) return "Cargando...";
+  if (isLoading) return (<div>Cargando...</div>);
 
-  if (error) return "Ocurrió un error: " + error.message;
+  if (error) return (<div>Ocurrió un error: {error.message}</div>);
 
   //const { data } = useAdsList();
 
-  reporta();
+  //reporta()
 
   if (connected) {
 
     let anuncios = [];
     if (typeof data == 'object') {
       anuncios = data.map((anuncio) => (
-        <Ad id={anuncio.id} 
+        <Ad key={anuncio.id} 
           ton={anuncio.ton} 
           floatingmargin={anuncio.margenflotante}
           lowerlimit={anuncio.limiteinferior}
@@ -47,6 +46,11 @@ export function AdsList () {
         <ul>{anuncios}</ul>
       </div>
     );
+/*        <div className="network" style={{display: 'block'}}>
+          {network ? (network === CHAIN.MAINNET ? "mainnet" : "testnet") : 
+            "N/D" }
+        </div> */
+
   } else {
     return (
       <div className="Container">

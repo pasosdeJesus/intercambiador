@@ -1,33 +1,32 @@
 import './App.css'
-import { TonConnectButton } from '@tonconnect/ui-react';
-import { useTonConnect } from './hooks/useTonConnect';
-import { useCounterContract } from './hooks/useCounterContract'; 
-import { CHAIN } from "@tonconnect/protocol";
-import { Counter } from "./components/Counter";
-import { AdsList } from "./components/AdsList";
-import { ExampleQueryGithub } from "./components/ExampleQueryGithub";
+import React, { useEffect } from 'react';
+import { AuthButton } from './components/AuthButton/AuthButton';
+import { connector } from './connector';
+import { TonProofDemo } from './components/TonProofDemo/TonProofDemo'; 
+//import { AdsList } from "./components/AdsList";
+//import { useQuery } from "react-query";
+//import axios from "axios";
 
-function App() {
 
-  const { connected, network, wallet, depura, reporta } = useTonConnect();
+export default function App() {
+
+  useEffect( () => { connector.restoreConnection(); }, []);
 
   return (
     <div className="App">
-      <div className="encabezado">
-        <img src="/logo.png" className="logo" alt="Intercambiador COP - TON" />
-        <h1>Intercambiador COP - TON</h1>
-      </div>
-      <div className="derecha" style={{display: 'flex', flexDirection: 'column', flexAlign: "flex-end"}}>
-        <TonConnectButton />
-        <div className="network" style={{display: 'block'}}>
-          {network ? (network === CHAIN.MAINNET ? "mainnet" : "testnet") : 
-            "N/D"
-          }
+      <header>
+        <div className="encabezado">
+          <img src="/logo.png" className="logo" alt="Intercambiador COP - TON" />
+          <h1>Intercambiador COP - TON</h1>
         </div>
-      </div>
-      <AdsList />
+        <div className="derecha" style={{display: 'flex', flexDirection: 'row'}}>
+          <AuthButton />
+        </div>
+      </header>
+      <main>
+        <TonProofDemo />
+      </main>
     </div>
   );
+        //<AdsList />
 }
-
-export default App;
