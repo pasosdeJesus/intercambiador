@@ -29,6 +29,7 @@ global cell valid;
 
 ;; testable
 () recv_internal (int balance, int msg_value, cell in_msg_full, slice in_msg_body) {
+
   var fm = in_msg_full.begin_parse();
   var flags = fm~load_uint(4);
   slice sender_address = fm~load_msg_addr();

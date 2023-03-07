@@ -1,8 +1,8 @@
-int equal_slices(slice a, slice b) asm "SDEQ";
 
 int __test_wrongmessage() {
 
   slice ad = my_address();
+
 
   var body = begin_cell()
     .store_uint(123, 32) ;; op
@@ -11,7 +11,7 @@ int __test_wrongmessage() {
   var sbody = body.begin_parse();
 
   var full = begin_cell()
-    .store_uint(0x6, 4)                         ;; 4 for flags 
+    .store_uint(0x6, 4)                         ;; 4 for flags
     .store_slice(ad)                            ;; 2..267 sender_address for addr_none would be 2 bits 00 --normally will be replaced by sender address
     .store_slice(ad)                            ;; 2..267  0043800efd...73010  // destination address
     .store_coins(1000)                          ;; 4..16(?)   // VarUInteger 16 (variable size)
@@ -37,16 +37,20 @@ int __test_wrongmessage() {
   cell data = begin_cell()             ;; initial data of contract
       .store_slice(ad)               ;; counter
       .store_uint(0, 256)              ;; none_address
-      .store_dict(new_dict())              
-      .store_dict(new_dict())              
+      .store_dict(new_dict())
+      .store_dict(new_dict())
       .end_cell();
+
+  dump_stack();
 
   int gas_usado1 = invoke_method_expect_fail(recv_internal, pila);
 
   return gas_usado1;
 }
 
-int __test_wrongop() {
+
+
+int k__test_wrongop() {
 
   slice ad = my_address();
 
@@ -59,7 +63,7 @@ int __test_wrongop() {
   var sbody = body.begin_parse();
 
   var full = begin_cell()
-    .store_uint(0x6, 4)                         ;; 4 for flags 
+    .store_uint(0x6, 4)                         ;; 4 for flags
     .store_slice(ad)                            ;; 2..267 sender_address for addr_none would be 2 bits 00 --normally will be replaced by sender address
     .store_slice(ad)                            ;; 2..267  0043800efd...73010  // destination address
     .store_coins(1000)                          ;; 4..16(?)   // VarUInteger 16 (variable size)
@@ -86,7 +90,7 @@ int __test_wrongop() {
       .store_slice(ad)               ;; address
       .store_uint(0, 256)              ;; public_key
       .store_dict(new_dict())          ;; dictionary
-      .store_dict(new_dict())          ;; dictionary    
+      .store_dict(new_dict())          ;; dictionary
       .end_cell();
 
   int gas_usado1 = invoke_method_expect_fail(recv_internal, pila);

@@ -1,5 +1,5 @@
 "Asm.fif" include
-// automatically generated from `/home/vtamara/.config/toncli/func-libs/error_codes.func` `/home/vtamara/.config/toncli/func-libs/math.func` `/home/vtamara/.config/toncli/func-libs/stdlib.func` `/home/vtamara/.config/toncli/test-libs/1.address_helpers.func` `/home/vtamara/.config/toncli/test-libs/bad_messages_generator.func` `/home/vtamara/.config/toncli/test-libs/c5_parse_helpers.func` `/home/vtamara/.config/toncli/test-libs/message_helpers.func` `/home/vtamara/.config/toncli/test-libs/storage-test-helpers.func` `/home/vtamara/.config/toncli/test-libs/tests-helpers.func` `/home/vtamara/.config/toncli/test-libs/token-helpers.func` `/home/vtamara/comp/ton/dora2023/func/contract.fc` `/home/vtamara/comp/ton/dora2023/tests/cases.fc` 
+// automatically generated from `/home/vtamara/.config/toncli/func-libs/error_codes.func` `/home/vtamara/.config/toncli/func-libs/math.func` `/home/vtamara/.config/toncli/func-libs/stdlib.func` `/home/vtamara/.config/toncli/test-libs/1.address_helpers.func` `/home/vtamara/.config/toncli/test-libs/bad_messages_generator.func` `/home/vtamara/.config/toncli/test-libs/c5_parse_helpers.func` `/home/vtamara/.config/toncli/test-libs/message_helpers.func` `/home/vtamara/.config/toncli/test-libs/storage-test-helpers.func` `/home/vtamara/.config/toncli/test-libs/tests-helpers.func` `/home/vtamara/.config/toncli/test-libs/token-helpers.func` `/home/vtamara/comp/ton/intercambiador/func/func/contract.fc` `/home/vtamara/comp/ton/intercambiador/func/tests/cases.fc` 
 PROGRAM{
   DECLPROC power
   DECLPROC sqrt
@@ -65,7 +65,7 @@ PROGRAM{
   DECLPROC save_data
   DECLPROC recv_internal
   DECLPROC __test_wrongmessage
-  DECLPROC __test_wrongop
+  DECLPROC k__test_wrongop
   DECLGLOBVAR manager_address
   DECLGLOBVAR public_key
   DECLGLOBVAR ads
@@ -2016,18 +2016,18 @@ PROGRAM{
     // 
     c4 PUSH	//  _1
     CTOS	//  ds
-    LDMSGADDR	//  _5 ds
-    SWAP	//  ds _5
+    LDMSGADDR	//  _3 ds
+    SWAP	//  ds _3
     manager_address SETGLOB
     DUMPSTK
-    256 LDU	//  _10 ds
-    SWAP	//  ds _10
+    256 LDU	//  _6 ds
+    SWAP	//  ds _6
     public_key SETGLOB
-    LDDICT	//  _13 ds
-    SWAP	//  ds _13
+    LDDICT	//  _9 ds
+    SWAP	//  ds _9
     ads SETGLOB
-    LDDICT	//  _24 _23
-    DROP	//  _16
+    LDDICT	//  _20 _19
+    DROP	//  _11
     valid SETGLOB
   }>
   save_data PROCREF:<{
@@ -2178,13 +2178,14 @@ PROGRAM{
     10 PUSHINT
     -ROT	//  _45=1000 _46=10 full sbody
     4 TUPLE	//  pila
+    DUMPSTK
     CONT:<{
       recv_internal CALLDICT
-    }>	//  pila _60
-    SWAP	//  _60 pila
+    }>	//  pila _61
+    SWAP	//  _61 pila
     invoke_method_expect_fail CALLDICT	//  gas_usado1
   }>
-  __test_wrongop PROC:<{
+  k__test_wrongop PROC:<{
     // 
     MYADDR	//  ad
     123 PUSHINT	//  ad _3=123
