@@ -22,3 +22,4 @@
 /backend/config/master.key
 .env
 node_modules
+backend-auth/tonproof
