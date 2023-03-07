@@ -1,0 +1,134 @@
+package main
+
+import (
+	"context"
+	"crypto/ed25519"
+	"crypto/sha256"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"encoding/base64"
+	"encoding/binary"
+	"encoding/hex"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/tonkeeper/tonproof/config"
+	"github.com/tonkeeper/tonproof/datatype"
+)
+
+const (
+	tonProofPrefix   = "ton-proof-item-v2/"
+	tonConnectPrefix = "ton-connect"
+)
+
+func SignatureVerify(pubkey ed25519.PublicKey, message, signature []byte) bool {
+	return ed25519.Verify(pubkey, message, signature)
+}
+
+func ConvertTonProofMessage(ctx context.Context, tp *datatype.TonProof) (*datatype.ParsedMessage, error) {
+	log := log.WithContext(ctx).WithField("prefix", "ConverTonProofMessage")
+
+	addr := strings.Split(tp.Address, ":")
+	if len(addr) != 2 {
+		return nil, fmt.Errorf("invalid address param: %v", tp.Address)
+	}
+
+	var parsedMessage datatype.ParsedMessage
+
+	workchain, err := strconv.ParseInt(addr[0], 10, 32)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	walletAddr, err := hex.DecodeString(addr[1])
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	sig, err := base64.StdEncoding.DecodeString(tp.Proof.Signature)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	parsedMessage.Workchain = int32(workchain)
+	parsedMessage.Address = walletAddr
+	parsedMessage.Domain = tp.Proof.Domain
+	parsedMessage.Timstamp = tp.Proof.Timestamp
+	parsedMessage.Signature = sig
+	parsedMessage.Payload = tp.Proof.Payload
+	parsedMessage.StateInit = tp.Proof.StateInit
+	return &parsedMessage, nil
+}
+
+func CreateMessage(ctx context.Context, message *datatype.ParsedMessage) ([]byte, error) {
+	wc := make([]byte, 4)
+	binary.BigEndian.PutUint32(wc, uint32(message.Workchain))
+
+	ts := make([]byte, 8)
+	binary.LittleEndian.PutUint64(ts, uint64(message.Timstamp))
+
+	dl := make([]byte, 4)
+	binary.LittleEndian.PutUint32(dl, message.Domain.LengthBytes)
+	m := []byte(tonProofPrefix)
+	m = append(m, wc...)
+	m = append(m, message.Address...)
+	m = append(m, dl...)
+	m = append(m, []byte(message.Domain.Value)...)
+	m = append(m, ts...)
+	m = append(m, []byte(message.Payload)...)
+	log.Info(string(m))
+	messageHash := sha256.Sum256(m)
+	fullMes := []byte{0xff, 0xff}
+	fullMes = append(fullMes, []byte(tonConnectPrefix)...)
+	fullMes = append(fullMes, messageHash[:]...)
+	res := sha256.Sum256(fullMes)
+	log.Info(hex.EncodeToString(res[:]))
+	return res[:], nil
+}
+
+func CheckProof(ctx context.Context, address, net string, tonProofReq *datatype.ParsedMessage) (bool, error) {
+	log := log.WithContext(ctx).WithField("prefix", "CheckProof")
+	pubKey, err := GetWalletPubKey(ctx, address, net)
+	if err != nil {
+		if tonProofReq.StateInit == "" {
+			log.Errorf("get wallet address error: %v", err)
+			return false, err
+		}
+
+	  log.Info("OJO pubKey1")
+	  log.Info(pubKey)
+
+		pubKey, err = ParseStateInit(tonProofReq.StateInit)
+		if err != nil {
+			log.Errorf("parse wallet state init error: %v", err)
+			return false, err
+		}
+	  log.Info("OJO pubKey2")
+	  log.Info(pubKey)
+	}
+
+	if time.Now().After(time.Unix(tonProofReq.Timstamp, 0).Add(time.Duration(config.Proof.ProofLifeTimeSec) * time.Second)) {
+		msgErr := "proof has been expired"
+		log.Error(msgErr)
+		return false, fmt.Errorf(msgErr)
+	}
+
+	if tonProofReq.Domain.Value != config.Proof.ExampleDomain {
+		msgErr := fmt.Sprintf("wrong domain: %v != %v", tonProofReq.Domain, config.Proof.ExampleDomain)
+		log.Error(msgErr)
+		return false, fmt.Errorf(msgErr)
+	}
+
+	mes, err := CreateMessage(ctx, tonProofReq)
+	if err != nil {
+		log.Errorf("create message error: %v", err)
+		return false, err
+	}
+
+	return SignatureVerify(pubKey, mes, tonProofReq.Signature), nil
+}
