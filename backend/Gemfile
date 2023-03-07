@@ -17,6 +17,10 @@ gem "dotenv-rails"               # Configuración de servidor en .env
 
 gem "jbuilder"
 
+gem "jwt"
+
+gem "net-http"
+
 gem "nokogiri"                   # Procesamiento XML
 
 gem "pg", "~> 1.1"
@@ -29,14 +33,17 @@ gem "rails", "~> 7.0.4", ">= 7.0.4.2"
 
 gem "rails-i18n"                 # Localización e Internacionalización
 
+gem "rbnacl"
+
 gem "twitter_cldr"               # Localiación e internacionalización
 
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 
 #### Motores que sobrecargan o basados en MSIP en orden de apilamento
 gem "msip",                       # SI estilo Pasos de Jesús
-  git: "https://gitlab.com/pasosdeJesus/msip.git"
+  #git: "https://gitlab.com/pasosdeJesus/msip.git"
   #path: "../msip"
+  path: "/home/vtamara/comp/rails/msip"
 
 
 
