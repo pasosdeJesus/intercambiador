@@ -36,5 +36,8 @@ module CoptonRails
     config.x.origen_cors = ENV.fetch('ORIGEN_CORS','').split(',')
     puts "config.x.origen_cors=#{config.x.origen_cors.inspect}"
 
+    # El siguiente es para validar, no fijar aquí, usar ENV
+    puts ENV.fetch('HS256_SECRET')
+
   end
 end

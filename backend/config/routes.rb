@@ -23,6 +23,18 @@ Rails.application.routes.draw do
   
     resources :anuncios
 
+    #post "ton-proof/generatePayload", to: "testigoaut#generar",
+    #  as: :testigoaut_generar
+
+    #post "ton-proof/checkProof", to: "testigoaut#chequear",
+    #  as: :testigoaut_chequear
+
+    get "dapp/getAccountInfo", to: "testigoaut#cuenta",
+      as: :testigoaut_cuenta
+
+    #get "v1/testigoaut_generar", to: 'testigoaut#generar', 
+    #  as: :testigoaut_generar
+
     root 'msip/hogar#index'
   end  # scope
   mount Msip::Engine, at: rutarel, as: 'msip'
