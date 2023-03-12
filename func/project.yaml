@@ -1,5 +1,6 @@
 contract:
   func:
-    - func/contract.fc
+    - func/ads_contract.fc
   tests:
-    - tests/cases.fc
+    - tests/ruby_ayuda.fc
+    - tests/elixir_ayuda.fc

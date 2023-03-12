@@ -1,0 +1,164 @@
+{-
+  Manage ads in p2p market
+-}
+
+
+const AD_MIN_COINS =   3030000000;
+const AD_MAX_TIME = 864000;   ;; 10 days (10 * 24 * 60 * 60);
+
+global slice manager_address;
+global int public_key;
+global int gseqno;
+global cell ads;
+
+() load_data () impure {
+  var ds = get_data().begin_parse();
+  manager_address = ds~load_msg_addr();
+  public_key = ds~load_uint(256);
+  gseqno = ds~load_uint(32);
+  ads = ds~load_dict();
+}
+
+() save_data () impure inline_ref {
+  set_data(begin_cell()
+  .store_slice(manager_address)
+  .store_uint(public_key, 256)
+  .store_uint(gseqno, 32)
+  .store_dict(ads)
+  .end_cell());
+}
+
+;; testable
+() recv_internal (int balance, int msg_value, cell in_msg_full, slice in_msg_body) {
+
+  var fm = in_msg_full.begin_parse();
+  var flags = fm~load_uint(4);
+  ;; flags~dump();
+  slice sender_address = fm~load_msg_addr();  ;; 267 bits
+  ;; sender_address~dump();
+  slice rec_address = fm~load_msg_addr();  ;; 267 bits
+  ;; rec_address~dump();
+  int coins = fm~load_coins();
+  ;; coins~dump();
+
+  ;; If a message doesn't start with the signature --for example
+  ;; just a message with some coins. The transaction will be dropped
+  ;; If we would like to accept the coins, it should check size and
+  ;; if it is small just do return ();
+  var signature = in_msg_body~load_bits(512);
+  ;; signature~dump();
+
+  var cs = in_msg_body;
+  var cs2 = in_msg_body;
+
+  load_data();
+
+  int mseqno = cs2~load_uint(32);
+  throw_unless(5004, mseqno == gseqno);
+
+  int op = cs2~load_uint(32);
+  ;;op~dump();
+
+  int msg_hash = slice_hash(cs);
+  ;;msg_hash~dump();
+
+  throw_unless(5000, check_signature(msg_hash, signature, public_key));
+  ;;dump_stack();
+
+  throw_unless(5002, slice_bits(sender_address) == 267);
+  slice csender = sender_address;
+  csender~skip_bits(11);
+  int senderkey = csender~load_uint(256);
+
+  if (op == 1000) {
+    throw_if(1102, coins < AD_MIN_COINS);
+
+    var (sd, success) = ads.udict_get?(256, senderkey);
+    throw_if(1101, success == -1);
+
+    coins~dump();
+    int forad = (coins / 10000000);  ;; Approximating to cents
+    forad~dump();
+    forad = forad * 10000000;
+    forad~dump();
+    forad = forad - 20000000;
+    forad~dump();
+    int exed = coins - forad;
+    exed~dump();
+    throw_if(5005, exed < 25000000);
+    int formanager = exed - 10000000;
+    formanager~dump();
+
+    cell datad = begin_cell()
+      .store_coins(forad)  ;; Value
+      .store_uint(now() + AD_MAX_TIME, 32) ;; Valid until
+      .end_cell();
+
+    var success = ads~udict_add?(256, senderkey, datad.begin_parse());
+    throw_if(5005, success != -1);
+
+    gseqno = gseqno + 1;
+    save_data();
+
+    var answer = begin_cell()
+     .store_uint(2, 4)  ;; bounceable, empty sender
+     .store_uint(0, 2)     ;; empty sender
+     .store_slice(manager_address)
+     .store_coins(formanager)
+     .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+     .store_slice(sender_address)
+     .end_cell()
+    ;
+
+    slice sanswer = answer.begin_parse();
+    var lsanswer = sanswer.slice_bits();
+    lsanswer~dump();
+    send_raw_message(answer, 0);
+    return ();
+  }
+  if (op == 2000) {
+
+    gseqno = gseqno + 1;
+    save_data();
+    return ();
+  }
+  if (op == 3000) {
+
+
+    gseqno = gseqno + 1;
+    save_data();
+    return ();
+  }
+  if (op == 4000) {
+
+    gseqno = gseqno + 1;
+    save_data();
+    return ();
+  }
+
+
+  throw_if(5001, -1); ;; invalid operation
+
+}
+
+
+slice get_manager_address() method_id {
+  load_data();
+  return manager_address;
+}
+
+int get_public_key() method_id {
+  load_data();
+  return public_key;
+}
+
+int seqno() method_id {
+  load_data();
+  return gseqno;
+}
+
+cell get_ads() method_id {
+  load_data();
+  return ads;
+}
+
