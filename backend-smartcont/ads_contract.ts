@@ -53,7 +53,7 @@ export default class AdsContract implements Contract {
     });
   }
 
-  async sendAdd(
+  async sendAddSellingAd(
     provider: ContractProvider, keypair: KeyPair, seqno: bigint, coins: number, via: Sender
   ) {
     const bodyToSign = beginCell()
@@ -67,7 +67,7 @@ export default class AdsContract implements Contract {
 
     const messageBody = beginCell()
     .storeBuffer(signature)
-    .storeSlice(bodyToSign.beginParse())
+    .storeRef(bodyToSign)
     .endCell();
     await provider.internal(via, {
       value: coins.toString(),  // Needs at least 0.005 because checks signature, with 0.002 produced error -14, out of gas

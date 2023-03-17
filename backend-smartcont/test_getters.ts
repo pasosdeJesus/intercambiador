@@ -30,8 +30,8 @@ async function main() {
   const adsPublicKey= await adsContract.getPublicKey();
   console.log("public_key:", adsPublicKey.toString());
 
-  const sellingAdAddresses = await adsContract.getSellingAdAddresses();
-  console.log("sellingAdAddresses:", sellingAdAddresses.toString());
+  //const sellingAdAddresses = await adsContract.getSellingAdAddresses();
+  //console.log("sellingAdAddresses:", sellingAdAddresses.toString());
 
   //const sellingAd = await adsContract.getSellingAd(adsAddress);
   //console.log("sellingAdAddresses:", sellingAd.toString());

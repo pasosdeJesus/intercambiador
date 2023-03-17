@@ -1,15 +1,11 @@
-/*
- * Based on https://ton-community.github.io/tutorials/02-contract/
- */
 
 import dotenv from "dotenv"
-dotenv.config({ path: "../../.env"})
+dotenv.config({ path: "../.env"})
 
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { mnemonicToWalletKey } from "ton-crypto";
 import { TonClient, WalletContractV4, Address } from "ton";
 import AdsContract from "./ads_contract"; 
-
 
 /* Based on
  * https://stackoverflow.com/questions/52595180/how-to-read-write-a-bigint-from-buffer-in-node-js-10
@@ -23,8 +19,8 @@ async function main() {
   const endpoint = await getHttpEndpoint({ network: "testnet" });
   const client = new TonClient({ endpoint });
 
-  if (typeof process.env.CONTRACT_ADDRESS == "undefined") {
-    return console.log("Missing variable CONTRACT_ADDRESS");
+  if (typeof process.env.ADSCONTRACT_ADDRESS== "undefined") {
+    return console.log("Missing variable ADSCONTRACT_ADDRESS");
   }
   if (typeof process.env.MANAGER_SECRET24 == "undefined") {
     return console.log("Missing variable MANGER_SECRET24");
@@ -41,8 +37,8 @@ async function main() {
     return console.log("wallet is not deployed");
   }
 
-  const adsAdress = Address.parse(process.env.CONTRACT_ADDRESS); 
-  const ads = new AdsContract(adsAdress);
+  const adsAddress = Address.parse(process.env.ADSCONTRACT_ADDRESS); 
+  const ads = new AdsContract(adsAddress);
   const adsContract = client.open(ads);
 
   const adsManagerAddress= await adsContract.getManagerAddress();
@@ -63,7 +59,7 @@ async function main() {
   const seqno = await walletContract.getSeqno();
   console.log("manager wallet seqno:", seqno.toString());
 
-  await adsContract.sendAdd(keypair, adsSeqno, 3.035, walletSender);
+  await adsContract.sendAddSellingAd(keypair, adsSeqno, 5.6, walletSender);
 
   // wait until confirmed
   let currentSeqno = seqno;
