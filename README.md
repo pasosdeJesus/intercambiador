@@ -20,7 +20,8 @@ the wallet that connects.
 
 Neither the frontend nor the backends still interact with the smart contract,
 although an advanced version of the smart contract is already deployed in 
-the address EQBTap0TCkPDJo-0VA1R50mBHTyzjx1H5cpuJNX3WtVUIgHt
+the address
+[EQBTap0TCkPDJo-0VA1R50mBHTyzjx1H5cpuJNX3WtVUIgHt](https://testnet.tonscan.org/address/EQBTap0TCkPDJo-0VA1R50mBHTyzjx1H5cpuJNX3WtVUIgHt)
 
 And it can be tested with the scripts available at `backend-smartcont` to
 query it and to add an Ad (after that it will give funds to the manager 
