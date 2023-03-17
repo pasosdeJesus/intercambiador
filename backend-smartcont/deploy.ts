@@ -3,12 +3,12 @@
  */
 
 import dotenv from "dotenv"
-dotenv.config({ path: "../../.env"})
+dotenv.config({ path: "../.env"})
 
 import * as fs from "fs";
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { mnemonicToWalletKey } from "ton-crypto";
-import { TonClient, Cell, WalletContractV4 } from "ton";
+import { Cell, TonClient, Slice, WalletContractV4 } from "ton";
 import { Address, Dictionary } from "ton-core";
 import AdsContract from "./ads_contract"; 
 
@@ -20,7 +20,7 @@ async function deploy() {
   // prepare AdsContract's initial code and data cells for deployment
   const adsContractCode = Cell.fromBoc(
     fs.readFileSync("./ads_contract.cell")
-  )[0]; // compilation output from step 6
+  )[0];
 
   if (typeof process.env.MANAGER_SECRET24 == "undefined") {
     console.error("Must define MANAGER_SECRET24");
@@ -38,9 +38,17 @@ async function deploy() {
     process.env.MANAGER_ADDRESS || "EQBw2alYCpBVSZsuxBV92akZdfKqU4u8upAU6nyx-Lv6rh81"
   );
   const public_key = keypair.publicKey;
-  const ads = Dictionary.empty<number, Cell>();
+  const fund_address = Address.parse(
+    process.env.HANDSFORSIERRALEONE_ADDRESS || "EQBW-VzrrQgUZCKonQm3gHqDFUK42yM33k3g6zMpvvq7tcCj"
+  );
+  const fund_percentage = 10;
+  const selling_ads = Dictionary.empty<Address, Cell>();
+  const buying_ads = Dictionary.empty<Address, Cell>();
+  const payments_buying_ads = Dictionary.empty<Address, Cell>();
   const adsContract = AdsContract.createForDeploy(
-    adsContractCode, manager_address, public_key, 1, ads
+    adsContractCode, manager_address, public_key, 1, 
+    fund_address, fund_percentage,
+    selling_ads, buying_ads, payments_buying_ads
   );
 
   // exit if contract is already deployed

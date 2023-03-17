@@ -4,8 +4,11 @@
   See in README.md its operation and requirements.
 -}
 
+;;#include "debug.fc";
 
-#include "debug.fc";
+{- USEFUL DEFINITIONS  -}
+
+forall X -> tuple unsafe_tuple(X x) asm "NOP";
 
 int equal_slices (slice a, slice b) asm "SDEQ";
 
@@ -19,10 +22,15 @@ key_len) "DICTGET" "NULLSWAPIFNOT";
 (cell, int) dict_delete?(cell dict, int key_len, slice key) asm(key dict key_len) "DICTDEL";
 
 
+
+{- CONSTANTS -}
+
 ;; We notice that the execution of adding ad cost around 0.015 TON
 const AD_MIN_COINS = 5200000000;
 const AD_MAX_TIME = 864000;   ;; 10 days (10 * 24 * 60 * 60);
 
+
+{- STATE -}
 
 global slice manager_address;
 global int public_key;
@@ -58,6 +66,11 @@ global cell payments_buying_ads;
   .store_dict(payments_buying_ads)
   .end_cell());
 }
+
+
+
+{- AUXILIARY FUNCTIONS -}
+
 
 ;; Send coins to seller or buyer
 () send_coins(slice address, int coins, slice text) impure {
@@ -107,6 +120,9 @@ global cell payments_buying_ads;
     ;
     send_raw_message(msgmanager, 0);
 }
+
+
+{- ANSWERS INTERNAL MESSAGES TO DO OPERATIONS -}
 
 
 () recv_internal (int balance, int msg_value, cell in_msg_full, slice in_msg_body) {

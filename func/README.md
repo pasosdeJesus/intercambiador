@@ -1,6 +1,14 @@
-# Ads to sell/buy TON in a P2P Market
+# Contract to manage ads to sell/buy TON in a P2P Market
 
-This contract will manage the list of ads to sell or buy TON in a P2P market.
+The contract `func/ads_contract.fc` will manage the list of ads to sell or 
+buy TON in the P2P market of Intercambiador COP - TON
+
+To test just run
+```
+make
+```
+
+# Requirements
 
 The general requirements are at:
 <https://docs.google.com/document/d/1JtmHp5SPsHglGwQJYlQSabMryCY6QzM-07OdDsJWrYw/edit?usp=sharing>
@@ -210,17 +218,5 @@ Returns all the coins in selling ads to sellers.
 Returns all the coins in payments to buy ads to buyers.
 
 Returns the rest of the coins to the manager and destroys contract.
-
-
-## 5300 Sent by manager to cancel an expiring ad or by request of buyer, or
-     in case of conflict.
-
-     Withouth and return coins or part of 
-     them to the buyer who created thethe cons paid by a seller 
-     to a buying ad, once the manager is convinced that the buyer didn't 
-     send full fiat money. 
-     It removes the entry from the
-     dictionary and releases the coins to the buyer who made the ad - 0.2.
-     Sends 0.2 to manager and fund.
 
 

@@ -1,24 +1,20 @@
-# README
+# Intercambiador COP - TON
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+You can see requirements at:
+<https://docs.google.com/document/d/1JtmHp5SPsHglGwQJYlQSabMryCY6QzM-07OdDsJWrYw/edit?usp=sharing>
 
-Things you may want to cover:
 
-* Ruby version
+Directories:
+* func: Smart contract to manage list of ads and their coins and its tests
+* backend-smartcont: Scripts to deploy the smart contract and to use it
+* backend-auth: In Go manages authentication with Ton Connect 2.0
+* backend: In Ruby on Rails manages database, it uses backend-ts
+* frontend: It uses backend and backend-auth
 
-* System dependencies
 
-* Configuration
+The environment variables must be defined in the file `.env` of this directory.
+You can start it by `cp .env.plantilla .env` and fill with your values.
 
-* Database creation
+In each directory you will find a README.md to help you
 
-* Database initialization
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...

@@ -4,9 +4,9 @@
   "description": "",
   "main": "deploy.ts",
   "scripts": {
-    "cell": "npx func-js ../func/stdlib.fc ../func/ads_contract.fc --boc ads_contract.cell",
+    "cell": "npx func-js ../func/func/stdlib.fc ../func/func/ads_contract.fc --boc ads_contract.cell",
     "deploy": "npx ts-node deploy.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx ts-node test_getters.ts"
   },
   "keywords": [],
   "author": "",

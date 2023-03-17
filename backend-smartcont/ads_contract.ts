@@ -3,8 +3,8 @@
  */
 
 import {
-  Address, beginCell, Cell, contractAddress, 
-  Contract, ContractProvider, Dictionary, Sender 
+  Address, beginCell, Cell, contractAddress,
+  Contract, ContractProvider, Dictionary, Sender
 } from "ton-core";
 
 import {
@@ -17,14 +17,25 @@ import {
 export default class AdsContract implements Contract {
 
   static createForDeploy(
-    code: Cell, manager_address: Address, public_key: Buffer,
-    seqno: number, ads: Dictionary<number, Cell>
+    code: Cell,
+    manager_address: Address,
+    public_key: Buffer,
+    seqno: number,
+    fund_address: Address,
+    fund_percentage: number,
+    selling_ads: Dictionary<Address, Cell>,
+    buying_ads: Dictionary<Address, Cell>,
+    payments_buying_ads: Dictionary<Address, Cell>,
   ): AdsContract {
     const data = beginCell()
     .storeAddress(manager_address)
     .storeBuffer(public_key, 32) // 32*8 = 256
     .storeUint(seqno, 32)
-    .storeDict(ads)
+    .storeAddress(fund_address)
+    .storeUint(fund_percentage, 8)
+    .storeDict(selling_ads)
+    .storeDict(buying_ads)
+    .storeDict(payments_buying_ads)
     .endCell();
     const workchain = 0; // deploy to workchain 0
     const address = contractAddress(workchain, { code, data });
@@ -51,11 +62,11 @@ export default class AdsContract implements Contract {
       .endCell();
 
     const hash = bodyToSign.hash();
-  
+
     const signature = sign(hash, keypair.secretKey);
 
     const messageBody = beginCell()
-    .storeBuffer(signature) 
+    .storeBuffer(signature)
     .storeSlice(bodyToSign.beginParse())
     .endCell();
     await provider.internal(via, {
@@ -78,6 +89,19 @@ export default class AdsContract implements Contract {
     const { stack } = await provider.get("seqno", []);
     return stack.readBigNumber();
   }
+
+  async getSellingAdAddresses(provider: ContractProvider) {
+    const { stack } = await provider.get("get_selling_ad_addresses", []);
+    return stack.readTuple();
+  }
+
+/* address must be converted to TupleItem 
+   async getSellingAd(provider: ContractProvider, address: Address) {
+    const { stack } = await provider.get("get_selling_ad_addresses", [address]);
+    return stack.readTuple();
+  } */
+
+
 
   /* No soportado aún por ton-core
   async getAds(provider: ContractProvider) {

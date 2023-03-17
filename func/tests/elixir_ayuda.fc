@@ -526,6 +526,13 @@ int __test_release_coins() {
   throw_if(101, exit_code != 0);
 
 
+  {-tuple pila = unsafe_tuple([])
+  var (int exit_code, int gas_usado2, return_values) = invoke_method_full(get_selling_ad_addresses, pila);
+
+  exit_code~dump();
+  throw_if(102, exit_code != 0);
+
+  return_values~dump();-}
 
   return gas_usado1;
 }
