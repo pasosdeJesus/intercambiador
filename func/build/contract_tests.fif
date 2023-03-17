@@ -1,5 +1,5 @@
 "Asm.fif" include
-// automatically generated from `/home/vtamara/.config/toncli/func-libs/error_codes.func` `/home/vtamara/.config/toncli/func-libs/math.func` `/home/vtamara/.config/toncli/func-libs/stdlib.func` `/home/vtamara/.config/toncli/test-libs/1.address_helpers.func` `/home/vtamara/.config/toncli/test-libs/bad_messages_generator.func` `/home/vtamara/.config/toncli/test-libs/c5_parse_helpers.func` `/home/vtamara/.config/toncli/test-libs/message_helpers.func` `/home/vtamara/.config/toncli/test-libs/storage-test-helpers.func` `/home/vtamara/.config/toncli/test-libs/tests-helpers.func` `/home/vtamara/.config/toncli/test-libs/token-helpers.func` `/home/vtamara/comp/ton/intercambiador/func/func/ads_contract.fc` `/home/vtamara/comp/ton/intercambiador/func/tests/ruby_ayuda.fc` `/home/vtamara/comp/ton/intercambiador/func/tests/elixir_ayuda.fc` incl:`/home/vtamara/comp/ton/intercambiador/func/tests/../func/typehelpers.fc` 
+// automatically generated from `/home/vtamara/.config/toncli/func-libs/error_codes.func` `/home/vtamara/.config/toncli/func-libs/math.func` `/home/vtamara/.config/toncli/func-libs/stdlib.func` `/home/vtamara/.config/toncli/test-libs/1.address_helpers.func` `/home/vtamara/.config/toncli/test-libs/bad_messages_generator.func` `/home/vtamara/.config/toncli/test-libs/c5_parse_helpers.func` `/home/vtamara/.config/toncli/test-libs/message_helpers.func` `/home/vtamara/.config/toncli/test-libs/storage-test-helpers.func` `/home/vtamara/.config/toncli/test-libs/tests-helpers.func` `/home/vtamara/.config/toncli/test-libs/token-helpers.func` `/home/vtamara/comp/ton/intercambiador/func/func/ads_contract.fc` incl:`/home/vtamara/comp/ton/intercambiador/func/func/debug.fc` `/home/vtamara/comp/ton/intercambiador/func/tests/ruby_ayuda.fc` `/home/vtamara/comp/ton/intercambiador/func/tests/elixir_ayuda.fc` incl:`/home/vtamara/comp/ton/intercambiador/func/tests/../func/typehelpers.fc` 
 PROGRAM{
   DECLPROC power
   DECLPROC sqrt
@@ -61,13 +61,17 @@ PROGRAM{
   103208 DECLMETHOD snake_concat
   DECLPROC snake_concat_tagged
   DECLPROC snake_equal?
+  DECLPROC slice_to_hexstr
   DECLPROC load_data
   DECLPROC save_data
+  DECLPROC send_coins
+  DECLPROC send_utilities
   DECLPROC recv_internal
   85668 DECLMETHOD get_manager_address
   78748 DECLMETHOD get_public_key
   85143 DECLMETHOD seqno
-  108115 DECLMETHOD get_ads
+  94452 DECLMETHOD get_selling_ad_addresses
+  119249 DECLMETHOD get_selling_ad
   DECLPROC __test_wrongmessage
   DECLPROC __test_wrongseqno
   DECLPROC __test_wrongsignature
@@ -75,10 +79,15 @@ PROGRAM{
   DECLPROC __test_goodsignature_badop
   DECLPROC __test_add_ad_fewcoins
   DECLPROC __test_add_ad_somecoins
+  DECLPROC __test_release_coins
   DECLGLOBVAR manager_address
   DECLGLOBVAR public_key
   DECLGLOBVAR gseqno
-  DECLGLOBVAR ads
+  DECLGLOBVAR fund_address
+  DECLGLOBVAR fund_percentage
+  DECLGLOBVAR selling_ads
+  DECLGLOBVAR buying_ads
+  DECLGLOBVAR payments_buying_ads
   power PROCREF:<{
     //  x exponent
     OVER	//  x exponent x
@@ -2021,6 +2030,69 @@ PROGRAM{
     }>	//  snake1 snake2 equal
     2 1 BLKDROP2	//  equal
   }>
+  slice_to_hexstr PROC:<{
+    //  s
+    x{30} PUSHSLICE	//  s _3
+    x{31} PUSHSLICE	//  s _3 _4
+    x{32} PUSHSLICE	//  s _3 _4 _5
+    x{33} PUSHSLICE	//  s _3 _4 _5 _6
+    x{34} PUSHSLICE	//  s _3 _4 _5 _6 _7
+    x{35} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8
+    x{36} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9
+    x{37} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10
+    x{38} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11
+    x{39} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11 _12
+    x{41} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13
+    x{42} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13 _14
+    x{43} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13 _14 _15
+    x{44} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13 _14 _15 _16
+    x{46} PUSHSLICE	//  s _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13 _14 _15 _16 _17
+    15 TUPLE	//  s dhex
+    OVER	//  s dhex s
+    SBITS	//  s dhex ls
+    DUP	//  s dhex ls ls
+    8 GTINT	//  s dhex ls _22
+    IFJMP:<{	//  s dhex ls
+      -8 ADDCONST	//  s dhex _26
+      s1 s2 XCHG	//  dhex s _26
+      LDSLICEX	//  dhex ant s
+      8 LDU	//  dhex ant _65 _64
+      DROP	//  dhex ant u
+      SWAP	//  dhex u ant
+      slice_to_hexstr CALLDICT	//  dhex u c1
+      NEWC	//  dhex u c1 _35
+      SWAP	//  dhex u _35 c1
+      STSLICER	//  dhex u _36
+      OVER	//  dhex u _36 u
+      4 RSHIFT#	//  dhex u _36 _38
+      s3 s(-1) PUXC	//  dhex u _36 dhex _38
+      INDEXVAR	//  dhex u _36 _39
+      STSLICER	//  dhex u _40
+      SWAP	//  dhex _40 u
+      4 MODPOW2#	//  dhex _40 _42
+      s1 s2 XCHG	//  _40 dhex _42
+      INDEXVAR	//  _40 _43
+      STSLICER	//  _44
+      ENDC	//  r
+      CTOS	//  _46
+    }>	//  s dhex ls
+    s1 s2 XCHG	//  dhex s ls
+    LDUX	//  dhex _67 _66
+    DROP	//  dhex u
+    NEWC	//  dhex u _51
+    OVER	//  dhex u _51 u
+    4 RSHIFT#	//  dhex u _51 _53
+    s3 s(-1) PUXC	//  dhex u _51 dhex _53
+    INDEXVAR	//  dhex u _51 _54
+    STSLICER	//  dhex u _55
+    SWAP	//  dhex _55 u
+    4 MODPOW2#	//  dhex _55 _57
+    s1 s2 XCHG	//  _55 dhex _57
+    INDEXVAR	//  _55 _58
+    STSLICER	//  _59
+    ENDC	//  r
+    CTOS	//  _61
+  }>
   load_data PROC:<{
     // 
     c4 PUSH	//  _1
@@ -2034,189 +2106,518 @@ PROGRAM{
     32 LDU	//  _13 ds
     SWAP	//  ds _13
     gseqno SETGLOB
-    LDDICT	//  _24 _23
-    DROP	//  _16
-    ads SETGLOB
+    LDMSGADDR	//  _16 ds
+    SWAP	//  ds _16
+    fund_address SETGLOB
+    8 LDU	//  _20 ds
+    SWAP	//  ds _20
+    fund_percentage SETGLOB
+    LDDICT	//  _23 ds
+    SWAP	//  ds _23
+    selling_ads SETGLOB
+    LDDICT	//  _26 ds
+    SWAP	//  ds _26
+    buying_ads SETGLOB
+    LDDICT	//  _45 _44
+    DROP	//  _29
+    payments_buying_ads SETGLOB
   }>
   save_data PROCREF:<{
     // 
-    ads GETGLOB	//  _0
-    gseqno GETGLOB	//  _0 _1
-    public_key GETGLOB	//  _0 _1 _2
-    NEWC	//  _0 _1 _2 _3
-    manager_address GETGLOB	//  _0 _1 _2 _3 _4
-    STSLICER	//  _0 _1 _2 _5
-    256 STU	//  _0 _1 _7
-    32 STU	//  _0 _9
-    STDICT	//  _10
-    ENDC	//  _11
+    payments_buying_ads GETGLOB	//  _0
+    buying_ads GETGLOB	//  _0 _1
+    selling_ads GETGLOB	//  _0 _1 _2
+    fund_percentage GETGLOB	//  _0 _1 _2 _3
+    gseqno GETGLOB	//  _0 _1 _2 _3 _4
+    INC	//  _0 _1 _2 _3 _6
+    public_key GETGLOB	//  _0 _1 _2 _3 _6 _7
+    NEWC	//  _0 _1 _2 _3 _6 _7 _8
+    manager_address GETGLOB	//  _0 _1 _2 _3 _6 _7 _8 _9
+    STSLICER	//  _0 _1 _2 _3 _6 _7 _10
+    256 STU	//  _0 _1 _2 _3 _6 _12
+    32 STU	//  _0 _1 _2 _3 _14
+    fund_address GETGLOB	//  _0 _1 _2 _3 _14 _15
+    STSLICER	//  _0 _1 _2 _3 _16
+    8 STU	//  _0 _1 _2 _18
+    STDICT	//  _0 _1 _19
+    STDICT	//  _0 _20
+    STDICT	//  _21
+    ENDC	//  _22
     c4 POP
+  }>
+  send_coins PROC:<{
+    //  address coins text
+    0 PUSHINT	//  address coins text _4=0
+    24 PUSHINT	//  address coins text _4=0 _5=24
+    NEWC	//  address coins text _4=0 _5=24 _6
+    6 STU	//  address coins text _4=0 _8
+    s0 s4 XCHG2	//  _4=0 coins text _8 address
+    STSLICER	//  _4=0 coins text _9
+    ROT	//  _4=0 text _9 coins
+    STVARUINT16	//  _4=0 text _10
+    s1 s2 XCHG	//  text _4=0 _10
+    107 STU	//  text _24
+    SWAP	//  _24 text
+    STSLICER	//  _25
+    ENDC	//  msg
+    DUP	//  msg msg
+    CTOS	//  msg smsg
+    SBITS	//  msg lsmsg
+    s0 DUMP	//  msg _32
+    DROP	//  msg
+    0 PUSHINT	//  msg _33=0
+    SENDRAWMSG
+  }>
+  send_utilities PROC:<{
+    //  sender_address utility
+    fund_percentage GETGLOB	//  sender_address utility _3
+    s1 s(-1) PUXC	//  sender_address utility utility _3
+    MUL	//  sender_address utility _4
+    100 PUSHINT	//  sender_address utility _4 _5=100
+    DIV	//  sender_address utility forfund
+    TUCK	//  sender_address forfund utility forfund
+    SUB	//  sender_address forfund formanager
+    0 PUSHINT	//  sender_address forfund formanager _10=0
+    24 PUSHINT	//  sender_address forfund formanager _10=0 _11=24
+    NEWC	//  sender_address forfund formanager _10=0 _11=24 _12
+    6 STU	//  sender_address forfund formanager _10=0 _14
+    fund_address GETGLOB	//  sender_address forfund formanager _10=0 _14 _15
+    STSLICER	//  sender_address forfund formanager _10=0 _16
+    s0 s3 XCHG2	//  sender_address _10=0 formanager _16 forfund
+    STVARUINT16	//  sender_address _10=0 formanager _17
+    s1 s2 XCHG	//  sender_address formanager _10=0 _17
+    107 STU	//  sender_address formanager _31
+    s2 PUSH	//  sender_address formanager _31 sender_address
+    STSLICER	//  sender_address formanager _32
+    ENDC	//  sender_address formanager msgfund
+    0 PUSHINT	//  sender_address formanager msgfund _34=0
+    SENDRAWMSG
+    0 PUSHINT	//  sender_address formanager _37=0
+    24 PUSHINT	//  sender_address formanager _37=0 _38=24
+    NEWC	//  sender_address formanager _37=0 _38=24 _39
+    6 STU	//  sender_address formanager _37=0 _41
+    manager_address GETGLOB	//  sender_address formanager _37=0 _41 _42
+    STSLICER	//  sender_address formanager _37=0 _43
+    ROT	//  sender_address _37=0 _43 formanager
+    STVARUINT16	//  sender_address _37=0 _44
+    107 STU	//  sender_address _58
+    SWAP	//  _58 sender_address
+    STSLICER	//  _59
+    ENDC	//  msgmanager
+    0 PUSHINT	//  msgmanager _61=0
+    SENDRAWMSG
   }>
   recv_internal PROC:<{
     //  balance msg_value in_msg_full in_msg_body
     s3 POP
     NIP	//  in_msg_body in_msg_full
     CTOS	//  in_msg_body fm
-    4 LDU	//  in_msg_body _186 _185
+    4 LDU	//  in_msg_body _407 _406
     NIP	//  in_msg_body fm
     LDMSGADDR	//  in_msg_body sender_address fm
-    LDMSGADDR	//  in_msg_body sender_address _190 _189
+    LDMSGADDR	//  in_msg_body sender_address _411 _410
     NIP	//  in_msg_body sender_address fm
-    LDVARUINT16	//  in_msg_body sender_address _192 _191
+    LDVARUINT16	//  in_msg_body sender_address _413 _412
     DROP	//  in_msg_body sender_address coins
     s0 s2 XCHG
     9 PUSHPOW2	//  coins sender_address in_msg_body _21=512
     LDSLICEX	//  coins sender_address signature in_msg_body
-    DUP	//  coins sender_address signature cs2 cs
+    LDREF	//  coins sender_address signature _417 _416
+    DROP	//  coins sender_address signature body2
+    CTOS	//  coins sender_address signature cs
+    DUP	//  coins sender_address signature cs cs2
     load_data CALLDICT
-    SWAP	//  coins sender_address signature cs cs2
     32 LDU	//  coins sender_address signature cs mseqno cs2
-    5004 PUSHINT	//  coins sender_address signature cs mseqno cs2 _30=5004
-    gseqno GETGLOB	//  coins sender_address signature cs mseqno cs2 _30=5004 _31
-    s1 s3 XCHG	//  coins sender_address signature cs _30=5004 cs2 mseqno _31
-    EQUAL	//  coins sender_address signature cs _30=5004 cs2 _32
-    s1 s2 XCHG	//  coins sender_address signature cs cs2 _30=5004 _32
-    THROWANYIFNOT
-    32 LDU	//  coins sender_address signature cs _198 _197
-    DROP	//  coins sender_address signature cs op
-    SWAP	//  coins sender_address signature op cs
-    HASHSU	//  coins sender_address signature op msg_hash
-    5000 PUSHINT	//  coins sender_address signature op msg_hash _40=5000
-    public_key GETGLOB	//  coins sender_address signature op msg_hash _40=5000 _41
-    s1 s4 XCHG	//  coins sender_address _40=5000 op msg_hash signature _41
-    CHKSIGNU	//  coins sender_address _40=5000 op _42
-    s1 s2 XCHG	//  coins sender_address op _40=5000 _42
-    THROWANYIFNOT
-    5002 PUSHINT	//  coins sender_address op _44=5002
-    s2 PUSH	//  coins sender_address op _44=5002 sender_address
-    SBITS	//  coins sender_address op _44=5002 _45
-    267 PUSHINT	//  coins sender_address op _44=5002 _45 _46=267
-    EQUAL	//  coins sender_address op _44=5002 _47
-    THROWANYIFNOT
-    OVER	//  coins sender_address op csender
-    11 PUSHINT	//  coins sender_address op csender _51=11
-    SDSKIPFIRST	//  coins sender_address op csender
-    256 LDU	//  coins sender_address op _200 _199
-    DROP	//  coins sender_address op senderkey
-    OVER
-    1000 PUSHINT	//  coins sender_address op senderkey op _57=1000
-    EQUAL	//  coins sender_address op senderkey _58
-    IFJMP:<{	//  coins sender_address op senderkey
-      NIP	//  coins sender_address senderkey
-      s2 PUSH
-      3030000000 PUSHINT	//  coins sender_address senderkey coins _60=3030000000
-      LESS	//  coins sender_address senderkey _61
-      1102 THROWIF
-      ads GETGLOB	//  coins sender_address senderkey _65
-      s1 s(-1) PUXC
-      8 PUSHPOW2	//  coins sender_address senderkey senderkey _65 _66=256
-      DICTUGET
-      NULLSWAPIFNOT	//  coins sender_address senderkey _201 _202
-      NIP	//  coins sender_address senderkey success
-      -1 EQINT	//  coins sender_address senderkey _70
-      1101 THROWIF
-      s0 s2 XCHG	//  senderkey sender_address coins
-      s0 DUMP	//  senderkey sender_address coins
-      DUP
-      10000000 PUSHINT	//  senderkey sender_address coins coins _75=10000000
-      DIV	//  senderkey sender_address coins forad
-      s0 DUMP	//  senderkey sender_address coins forad
-      10000000 PUSHINT	//  senderkey sender_address coins forad _79=10000000
-      MUL	//  senderkey sender_address coins forad
-      s0 DUMP	//  senderkey sender_address coins forad
-      20000000 PUSHINT	//  senderkey sender_address coins forad _83=20000000
-      SUB	//  senderkey sender_address coins forad
-      s0 DUMP	//  senderkey sender_address coins forad
-      TUCK	//  senderkey sender_address forad coins forad
-      SUB	//  senderkey sender_address forad exed
-      s0 DUMP	//  senderkey sender_address forad exed
-      5005 PUSHINT	//  senderkey sender_address forad exed _91=5005
+    gseqno GETGLOB	//  coins sender_address signature cs mseqno cs2 _35
+    s1 s2 XCHG	//  coins sender_address signature cs cs2 mseqno _35
+    EQUAL	//  coins sender_address signature cs cs2 _36
+    504 THROWIFNOT
+    32 LDU	//  coins sender_address signature cs op cs2
+    s2 PUSH	//  coins sender_address signature cs op cs2 cs
+    HASHSU	//  coins sender_address signature cs op cs2 _43
+    s3 POP	//  coins sender_address signature msg_hash op cs2
+    public_key GETGLOB	//  coins sender_address signature msg_hash op cs2 _45
+    4 1 REVERSE	//  coins sender_address cs2 op msg_hash signature _45
+    CHKSIGNU	//  coins sender_address cs2 op _46
+    500 THROWIFNOT
+    s2 PUSH	//  coins sender_address cs2 op sender_address
+    SBITS	//  coins sender_address cs2 op _49
+    267 PUSHINT	//  coins sender_address cs2 op _49 _50=267
+    EQUAL	//  coins sender_address cs2 op _51
+    502 THROWIFNOT
+    DUP
+    1000 PUSHINT	//  coins sender_address cs2 op op _53=1000
+    EQUAL	//  coins sender_address cs2 op _54
+    IFJMP:<{	//  coins sender_address cs2 op
+      2DROP	//  coins sender_address
       OVER
-      25000000 PUSHINT	//  senderkey sender_address forad exed _91=5005 exed _92=25000000
-      LESS	//  senderkey sender_address forad exed _91=5005 _93
-      THROWANYIF
-      10000000 PUSHINT	//  senderkey sender_address forad exed _96=10000000
-      SUB	//  senderkey sender_address forad formanager
-      s0 DUMP	//  senderkey sender_address forad formanager
-      NOW	//  senderkey sender_address forad formanager _101
-      864000 PUSHINT	//  senderkey sender_address forad formanager _101 _102=864000
-      ADD	//  senderkey sender_address forad formanager _103
-      NEWC	//  senderkey sender_address forad formanager _103 _104
-      s0 s3 XCHG2	//  senderkey sender_address _103 formanager _104 forad
-      STVARUINT16	//  senderkey sender_address _103 formanager _105
-      s1 s2 XCHG	//  senderkey sender_address formanager _103 _105
-      32 STU	//  senderkey sender_address formanager _107
-      ENDC	//  senderkey sender_address formanager datad
-      CTOS	//  senderkey sender_address formanager _111
-      ads GETGLOB	//  senderkey sender_address formanager _111 _112
-      s1 s4 s0 XCHG3
-      8 PUSHPOW2	//  formanager sender_address _111 senderkey _112 _113=256
-      DICTUADD	//  formanager sender_address _115 _110
-      SWAP	//  formanager sender_address _110 _115
-      ads SETGLOB	//  formanager sender_address success
-      5005 PUSHINT	//  formanager sender_address success _116=5005
-      SWAP	//  formanager sender_address _116=5005 success
-      -1 NEQINT	//  formanager sender_address _116=5005 _118
-      THROWANYIF
-      gseqno GETGLOB	//  formanager sender_address _120
-      INC	//  formanager sender_address _123
-      gseqno SETGLOB
+      5200000000 PUSHINT	//  coins sender_address coins _56=5200000000
+      LESS	//  coins sender_address _57
+      1003 THROWIF
+      selling_ads GETGLOB	//  coins sender_address _61
+      s1 s(-1) PUXC
+      267 PUSHINT	//  coins sender_address sender_address _61 _62=267
+      DICTGET
+      NULLSWAPIFNOT	//  coins sender_address _422 _423
+      NIP	//  coins sender_address success
+      -1 EQINT	//  coins sender_address _66
+      1002 THROWIF
+      OVER
+      1000000000 PUSHINT	//  coins sender_address coins _69=1000000000
+      DIV	//  coins sender_address forad
+      1000000000 PUSHINT	//  coins sender_address forad _71=1000000000
+      MUL	//  coins sender_address forad
+      s2 s2 XCPU	//  forad sender_address coins forad
+      SUB	//  forad sender_address exed
+      10000000 PUSHINT	//  forad sender_address exed _75=10000000
+      SUB	//  forad sender_address exed
+      DUP
+      100000000 PUSHINT	//  forad sender_address exed exed _78=100000000
+      LESS	//  forad sender_address exed _79
+      505 THROWIF
+      NOW	//  forad sender_address exed _82
+      864000 PUSHINT	//  forad sender_address exed _82 _83=864000
+      ADD	//  forad sender_address exed _84
+      NEWC	//  forad sender_address exed _84 _85
+      s0 s4 XCHG2	//  _84 sender_address exed _85 forad
+      STVARUINT16	//  _84 sender_address exed _86
+      s1 s3 XCHG	//  exed sender_address _84 _86
+      64 STU	//  exed sender_address _88
+      ENDC	//  exed sender_address datad
+      CTOS	//  exed sender_address _92
+      selling_ads GETGLOB	//  exed sender_address _92 _93
+      s2 s(-1) PUXC
+      267 PUSHINT	//  exed sender_address _92 sender_address _93 _94=267
+      DICTADD	//  exed sender_address _96 _91
+      SWAP	//  exed sender_address _91 _96
+      selling_ads SETGLOB	//  exed sender_address success
+      -1 NEQINT	//  exed sender_address _99
+      1001 THROWIF
       save_data INLINECALLDICT
-      0 PUSHINT	//  formanager sender_address _126=0
-      DUP	//  formanager sender_address _126=0 _127=0
-      2 PUSHINT	//  formanager sender_address _126=0 _127=0 _128=2
-      NEWC	//  formanager sender_address _126=0 _127=0 _128=2 _129
-      4 STU	//  formanager sender_address _126=0 _127=0 _131
-      2 STU	//  formanager sender_address _126=0 _133
-      manager_address GETGLOB	//  formanager sender_address _126=0 _133 _134
-      STSLICER	//  formanager sender_address _126=0 _135
-      s0 s3 XCHG2	//  _126=0 sender_address _135 formanager
-      STVARUINT16	//  _126=0 sender_address _136
-      s1 s2 XCHG	//  sender_address _126=0 _136
-      107 STU	//  sender_address _150
-      SWAP	//  _150 sender_address
-      STSLICER	//  _151
-      ENDC	//  answer
-      DUP	//  answer answer
-      CTOS	//  answer sanswer
-      SBITS	//  answer lsanswer
-      s0 DUMP	//  answer _158
-      DROP	//  answer
-      0 PUSHINT	//  answer _159=0
-      SENDRAWMSG
-    }>	//  coins sender_address op senderkey
-    s1 s3 XCHG
-    3 BLKDROP	//  op
+      SWAP	//  sender_address exed
+      send_utilities CALLDICT
+    }>	//  coins sender_address cs2 op
     DUP
-    2000 PUSHINT	//  op op _161=2000
-    EQUAL	//  op _162
+    1100 PUSHINT	//  coins sender_address cs2 op op _103=1100
+    EQUAL	//  coins sender_address cs2 op _104
+    IFJMP:<{	//  coins sender_address cs2 op
+      DROP	//  coins sender_address cs2
+      LDMSGADDR	//  coins sender_address buyeraddr cs2
+      SWAP	//  coins sender_address cs2 buyeraddr
+      s0 DUMP	//  coins sender_address cs2 buyeraddr
+      SWAP	//  coins sender_address buyeraddr cs2
+      LDVARUINT16	//  coins sender_address buyeraddr _429 _428
+      DROP	//  coins sender_address buyeraddr buyercoins
+      selling_ads GETGLOB	//  coins sender_address buyeraddr buyercoins _115
+      s3 s(-1) PUXC
+      267 PUSHINT	//  coins sender_address buyeraddr buyercoins sender_address _115 _116=267
+      DICTGET
+      NULLSWAPIFNOT	//  coins sender_address buyeraddr buyercoins sd success
+      NOT	//  coins sender_address buyeraddr buyercoins sd _119
+      1102 THROWIF
+      SWAP	//  coins sender_address buyeraddr sd buyercoins
+      s0 DUMP	//  coins sender_address buyeraddr sd buyercoins
+      SWAP	//  coins sender_address buyeraddr buyercoins sd
+      LDVARUINT16	//  coins sender_address buyeraddr buyercoins adcoins sd
+      64 LDU	//  coins sender_address buyeraddr buyercoins adcoins _435 _434
+      DROP	//  coins sender_address buyeraddr buyercoins adcoins validuntil
+      s0 DUMP	//  coins sender_address buyeraddr buyercoins adcoins _131
+      DROP	//  coins sender_address buyeraddr buyercoins adcoins
+      s0 DUMP	//  coins sender_address buyeraddr buyercoins adcoins
+      2DUP	//  coins sender_address buyeraddr buyercoins adcoins buyercoins adcoins
+      GREATER	//  coins sender_address buyeraddr buyercoins adcoins _135
+      1103 THROWIF
+      s4 PUSH
+      200000000 PUSHINT	//  coins sender_address buyeraddr buyercoins adcoins coins _138=200000000
+      LESS	//  coins sender_address buyeraddr buyercoins adcoins _139
+      1104 THROWIF
+      selling_ads GETGLOB	//  coins sender_address buyeraddr buyercoins adcoins _143
+      s4 s(-1) PUXC
+      267 PUSHINT	//  coins sender_address buyeraddr buyercoins adcoins sender_address _143 _144=267
+      DICTDEL	//  coins sender_address buyeraddr buyercoins adcoins _146 _142
+      SWAP	//  coins sender_address buyeraddr buyercoins adcoins _142 _146
+      selling_ads SETGLOB	//  coins sender_address buyeraddr buyercoins adcoins success
+      1105 THROWIFNOT
+      s2 s1 XCPU
+      x{436f6d707261646f20656e2068747470733a2f2f696e74657263616d626961646f722e7061736f7364654a657375732e6f7267} PUSHSLICE	//  coins sender_address adcoins buyercoins buyeraddr buyercoins _149
+      send_coins CALLDICT
+      SUB	//  coins sender_address remcoins
+      DUP	//  coins sender_address remcoins remcoins
+      0 GTINT	//  coins sender_address remcoins _154
+      IF:<{	//  coins sender_address remcoins
+        s1 s(-1) PUXC
+        x{51756564c3b320747261732076656e7461} PUSHSLICE	//  coins sender_address sender_address remcoins _155
+        send_coins CALLDICT
+      }>ELSE<{
+        DROP	//  coins sender_address
+      }>
+      save_data INLINECALLDICT
+      SWAP	//  sender_address coins
+      send_utilities CALLDICT
+    }>	//  coins sender_address cs2 op
+    DUP
+    1200 PUSHINT	//  coins sender_address cs2 op op _159=1200
+    EQUAL	//  coins sender_address cs2 op _160
+    IFJMP:<{	//  coins sender_address cs2 op
+      2DROP	//  coins sender_address
+      selling_ads GETGLOB	//  coins sender_address _163
+      s1 s(-1) PUXC
+      267 PUSHINT	//  coins sender_address sender_address _163 _164=267
+      DICTGET
+      NULLSWAPIFNOT	//  coins sender_address sd success
+      NOT	//  coins sender_address sd _167
+      1202 THROWIF
+      LDVARUINT16	//  coins sender_address _441 _440
+      DROP	//  coins sender_address adcoins
+      s2 PUSH
+      20000000 PUSHINT	//  coins sender_address adcoins coins _177=20000000
+      LESS	//  coins sender_address adcoins _178
+      1203 THROWIF
+      selling_ads GETGLOB	//  coins sender_address adcoins _182
+      s2 s(-1) PUXC
+      267 PUSHINT	//  coins sender_address adcoins sender_address _182 _183=267
+      DICTDEL	//  coins sender_address adcoins _185 _181
+      SWAP	//  coins sender_address adcoins _181 _185
+      selling_ads SETGLOB	//  coins sender_address adcoins success
+      1204 THROWIFNOT
+      s1 s(-1) PUXC
+      x{416e756e63696f2063616e63656c61646f} PUSHSLICE	//  coins sender_address sender_address adcoins _188
+      send_coins CALLDICT
+      save_data INLINECALLDICT
+      SWAP	//  sender_address coins
+      send_utilities CALLDICT
+    }>	//  coins sender_address cs2 op
+    DUP
+    1300 PUSHINT	//  coins sender_address cs2 op op _192=1300
+    EQUAL	//  coins sender_address cs2 op _193
+    IFJMP:<{	//  coins sender_address cs2 op
+      DROP	//  coins sender_address cs2
+      manager_address GETGLOB	//  coins sender_address cs2 _195
+      s1 s2 XCHG	//  coins cs2 sender_address _195
+      SDEQ	//  coins cs2 _196
+      1301 THROWIFNOT
+      LDMSGADDR	//  coins selleraddr cs2
+      selling_ads GETGLOB	//  coins selleraddr cs2 _203
+      s2 s(-1) PUXC
+      267 PUSHINT	//  coins selleraddr cs2 selleraddr _203 _204=267
+      DICTGET
+      NULLSWAPIFNOT	//  coins selleraddr cs2 sd success
+      NOT	//  coins selleraddr cs2 sd _207
+      1302 THROWIF
+      LDVARUINT16	//  coins selleraddr cs2 _451 _450
+      DROP	//  coins selleraddr cs2 adcoins
+      OVER	//  coins selleraddr cs2 adcoins cs2
+      SBITS	//  coins selleraddr cs2 adcoins _216
+      0 EQINT	//  coins selleraddr cs2 adcoins _218
+      IF:<{	//  coins selleraddr cs2 adcoins
+        NIP	//  coins selleraddr adcoins
+        selling_ads GETGLOB	//  coins selleraddr adcoins _221
+        s2 s(-1) PUXC
+        267 PUSHINT	//  coins selleraddr adcoins selleraddr _221 _222=267
+        DICTDEL	//  coins selleraddr adcoins _224 _220
+        SWAP	//  coins selleraddr adcoins _220 _224
+        selling_ads SETGLOB	//  coins selleraddr adcoins success
+        1303 THROWIFNOT
+        s1 s(-1) PUXC
+        x{416e756e63696f206578706972c3b3} PUSHSLICE	//  coins selleraddr selleraddr adcoins _227
+        send_coins CALLDICT
+      }>ELSE<{	//  coins selleraddr cs2 adcoins
+        SWAP	//  coins selleraddr adcoins cs2
+        LDVARUINT16	//  coins selleraddr adcoins coinsseller cs2
+        LDMSGADDR	//  coins selleraddr adcoins coinsseller _459 _458
+        DROP	//  coins selleraddr adcoins coinsseller buyeraddr
+        s1 s2 PUSH2	//  coins selleraddr adcoins coinsseller buyeraddr coinsseller adcoins
+        GREATER	//  coins selleraddr adcoins coinsseller buyeraddr _236
+        1304 THROWIF
+        selling_ads GETGLOB	//  coins selleraddr adcoins coinsseller buyeraddr _240
+        s4 s(-1) PUXC
+        267 PUSHINT	//  coins selleraddr adcoins coinsseller buyeraddr selleraddr _240 _241=267
+        DICTDEL	//  coins selleraddr adcoins coinsseller buyeraddr _243 _239
+        SWAP	//  coins selleraddr adcoins coinsseller buyeraddr _239 _243
+        selling_ads SETGLOB	//  coins selleraddr adcoins coinsseller buyeraddr success
+        1303 THROWIFNOT
+        s3 s1 PUSH2
+        x{5265746f726e61646f2074726173207265736f6c756369c3b36e} PUSHSLICE	//  coins selleraddr adcoins coinsseller buyeraddr selleraddr coinsseller _246
+        send_coins CALLDICT
+        s1 s2 PUSH2	//  coins selleraddr adcoins coinsseller buyeraddr coinsseller adcoins
+        LESS	//  coins selleraddr adcoins coinsseller buyeraddr _248
+        IF:<{	//  coins selleraddr adcoins coinsseller buyeraddr
+          -ROT	//  coins selleraddr buyeraddr adcoins coinsseller
+          SUB	//  coins selleraddr buyeraddr _249
+          x{50616761646f2074726173207265736f6c756369c3b36e} PUSHSLICE	//  coins selleraddr buyeraddr _249 _250
+          send_coins CALLDICT
+        }>ELSE<{
+          3 BLKDROP	//  coins selleraddr
+        }>
+      }>
+      save_data INLINECALLDICT
+      SWAP	//  selleraddr coins
+      send_utilities CALLDICT
+    }>	//  coins sender_address cs2 op
+    3 1 BLKDROP2	//  op
+    DUP
+    2000 PUSHINT	//  op op _254=2000
+    EQUAL	//  op _255
     IFJMP:<{	//  op
       DROP	// 
-      gseqno GETGLOB	//  _163
-      INC	//  _166
-      gseqno SETGLOB
+      0 PUSHINT	//  sellers_coins=0
+      DUP	//  sellers_coins=0 numop=0
+      NEWC	//  sellers_coins=0 numop=0 _261
+      ENDC	//  sellers_coins=0 numop=0 ckey
+      DUP	//  sellers_coins=0 numop=0 ckey ckey
+      CTOS	//  sellers_coins=0 numop=0 ckey skey
+      UNTIL:<{
+        selling_ads GETGLOB	//  sellers_coins numop ckey skey _267
+        267 PUSHINT	//  sellers_coins numop ckey skey _267 _268=267
+        DICTGETNEXT
+        NULLSWAPIFNOT2	//  sellers_coins numop ckey sd skey f
+        s0 s2 XCHG	//  sellers_coins numop ckey f skey sd
+        LDVARUINT16	//  sellers_coins numop ckey f skey _466 _465
+        DROP	//  sellers_coins numop ckey f skey adcoins
+        s1 s5 XCHG	//  skey numop ckey f sellers_coins adcoins
+        ADD	//  skey numop ckey f sellers_coins
+        OVER	//  skey numop ckey f sellers_coins f
+        IF:<{	//  skey numop ckey f sellers_coins
+          s0 s3 XCHG	//  skey sellers_coins ckey f numop
+          INC	//  skey sellers_coins ckey f numop
+          s0 s3 XCHG	//  skey numop ckey f sellers_coins
+        }>	//  skey numop ckey f sellers_coins
+        SWAP	//  skey numop ckey sellers_coins f
+        NOT	//  skey numop ckey sellers_coins _276
+        s1 s4 XCHG	//  sellers_coins numop ckey skey _276
+      }>	//  sellers_coins numop ckey skey
+      DROP	//  sellers_coins numop ckey
+      DUP	//  sellers_coins numop ckey ckey
+      CTOS	//  sellers_coins numop ckey skey
+      UNTIL:<{
+        buying_ads GETGLOB	//  sellers_coins numop ckey skey _281
+        267 PUSHINT	//  sellers_coins numop ckey skey _281 _282=267
+        DICTGETNEXT
+        NULLSWAPIFNOT2	//  sellers_coins numop ckey _468 _467 _469
+        s2 POP	//  sellers_coins numop ckey f skey
+        OVER	//  sellers_coins numop ckey f skey f
+        IF:<{	//  sellers_coins numop ckey f skey
+          s0 s3 XCHG	//  sellers_coins skey ckey f numop
+          INC	//  sellers_coins skey ckey f numop
+          s0 s3 XCHG	//  sellers_coins numop ckey f skey
+        }>	//  sellers_coins numop ckey f skey
+        SWAP	//  sellers_coins numop ckey skey f
+        NOT	//  sellers_coins numop ckey skey _286
+      }>	//  sellers_coins numop ckey skey
+      DROP	//  sellers_coins numop ckey
+      CTOS	//  sellers_coins numop skey
+      UNTIL:<{
+        payments_buying_ads GETGLOB	//  sellers_coins numop skey _291
+        267 PUSHINT	//  sellers_coins numop skey _291 _292=267
+        DICTGETNEXT
+        NULLSWAPIFNOT2	//  sellers_coins numop sd skey f
+        s0 s2 XCHG	//  sellers_coins numop f skey sd
+        LDMSGADDR	//  sellers_coins numop f skey _474 _473
+        NIP	//  sellers_coins numop f skey sd
+        LDVARUINT16	//  sellers_coins numop f skey _476 _475
+        DROP	//  sellers_coins numop f skey pcoins
+        s1 s4 XCHG	//  skey numop f sellers_coins pcoins
+        ADD	//  skey numop f sellers_coins
+        OVER	//  skey numop f sellers_coins f
+        IF:<{	//  skey numop f sellers_coins
+          s0 s2 XCHG	//  skey sellers_coins f numop
+          INC	//  skey sellers_coins f numop
+          s0 s2 XCHG	//  skey numop f sellers_coins
+        }>	//  skey numop f sellers_coins
+        SWAP	//  skey numop sellers_coins f
+        NOT	//  skey numop sellers_coins _303
+        s1 s3 XCHG	//  sellers_coins numop skey _303
+      }>	//  sellers_coins numop skey
+      DROP	//  sellers_coins numop
+      BALANCE	//  sellers_coins numop _306
+      UNPAIR	//  sellers_coins numop _477 _478
+      DROP	//  sellers_coins numop balance
+      ROT	//  numop balance sellers_coins
+      SUB	//  numop _309
+      SWAP
+      100000000 PUSHINT	//  _309 numop _310=100000000
+      MUL	//  _309 _311
+      SUB	//  utility
+      DUP	//  utility utility
+      0 LESSINT	//  utility _315
+      2001 THROWIF
       save_data INLINECALLDICT
+      manager_address GETGLOB	//  utility _318
+      SWAP	//  _318 utility
+      send_utilities CALLDICT
     }>	//  op
-    DUP
-    3000 PUSHINT	//  op op _168=3000
-    EQUAL	//  op _169
-    IFJMP:<{	//  op
-      DROP	// 
-      gseqno GETGLOB	//  _170
-      INC	//  _173
-      gseqno SETGLOB
-      save_data INLINECALLDICT
-    }>	//  op
-    4000 PUSHINT	//  op _175=4000
-    EQUAL	//  _176
+    3000 PUSHINT	//  op _320=3000
+    EQUAL	//  _321
     IFJMP:<{	// 
-      gseqno GETGLOB	//  _177
-      INC	//  _180
-      gseqno SETGLOB
+      UNTIL:<{
+        selling_ads GETGLOB	//  _326
+        267 PUSHINT	//  _326 _327=267
+        DICTREMMIN
+        NULLSWAPIFNOT2	//  _329 _480 _479 _481
+        s0 s3 XCHG	//  _481 _480 _479 _329
+        selling_ads SETGLOB	//  success sd address
+        s2 PUSH	//  success sd address success
+        IF:<{	//  success sd address
+          SWAP	//  success address sd
+          LDVARUINT16	//  success address _487 _486
+          DROP	//  success address mcoins
+          x{416e756e63696f2063616e63656c61646f20706f722066696e206465206f706572616369c3b36e} PUSHSLICE	//  success address mcoins _337
+          send_coins CALLDICT
+        }>ELSE<{
+          2DROP	//  success
+        }>
+        NOT	//  _339
+      }>	// 
+      UNTIL:<{
+        buying_ads GETGLOB	//  _344
+        267 PUSHINT	//  _344 _345=267
+        DICTREMMIN
+        NULLSWAPIFNOT2	//  _493 _495 _494 _496
+        2 1 BLKDROP2	//  _347 _492
+        SWAP	//  _492 _347
+        buying_ads SETGLOB	//  success
+        NOT	//  _348
+      }>	// 
+      UNTIL:<{
+        payments_buying_ads GETGLOB	//  _353
+        267 PUSHINT	//  _353 _354=267
+        DICTREMMIN
+        NULLSWAPIFNOT2	//  _500 _502 _501 _503
+        NIP	//  _356 _498 _499
+        s0 s2 XCHG	//  _499 _498 _356
+        payments_buying_ads SETGLOB	//  success sd
+        OVER	//  success sd success
+        IF:<{	//  success sd
+          LDMSGADDR	//  success payeer sd
+          LDVARUINT16	//  success payeer _507 _506
+          DROP	//  success payeer pcoins
+          x{5061676f207265746f726e61646f20706f722066696e206465206f706572616369c3b36e} PUSHSLICE	//  success payeer pcoins _367
+          send_coins CALLDICT
+        }>ELSE<{
+          DROP	//  success
+        }>
+        NOT	//  _369
+      }>	// 
       save_data INLINECALLDICT
+      BALANCE	//  _373
+      UNPAIR	//  _510 _511
+      DROP	//  balance
+      0 PUSHINT	//  balance _376=0
+      16 PUSHINT	//  balance _376=0 _377=16
+      NEWC	//  balance _376=0 _377=16 _378
+      6 STU	//  balance _376=0 _380
+      manager_address GETGLOB	//  balance _376=0 _380 _381
+      STSLICER	//  balance _376=0 _382
+      ROT	//  _376=0 _382 balance
+      STVARUINT16	//  _376=0 _383
+      107 STU	//  _397
+      x{46696e206465206f706572616369c3b36e} PUSHSLICE	//  _397 _398
+      STSLICER	//  _399
+      ENDC	//  msgmanager
+      160 PUSHINT	//  msgmanager _401=160
+      SENDRAWMSG
     }>	// 
-    5001 PUSHINT	//  _182=5001
-    THROWANY
+    501 THROW
   }>
   get_manager_address PROC:<{
     // 
@@ -2233,10 +2634,41 @@ PROGRAM{
     load_data CALLDICT
     gseqno GETGLOB	//  _1
   }>
-  get_ads PROC:<{
+  get_selling_ad_addresses PROC:<{
     // 
     load_data CALLDICT
-    ads GETGLOB	//  _1
+    0 TUPLE	//  ret
+    NEWC	//  ret _5
+    ENDC	//  ret ckey
+    CTOS	//  ret skey
+    UNTIL:<{
+      selling_ads GETGLOB	//  ret skey _11
+      267 PUSHINT	//  ret skey _11 _12=267
+      DICTGETNEXT
+      NULLSWAPIFNOT2	//  ret _18 _17 _19
+      s2 POP	//  ret f skey
+      OVER	//  ret f skey f
+      IF:<{	//  ret f skey
+        s2 s2 XCPU	//  skey f ret skey
+        TPUSH	//  skey f ret
+        s0 s2 XCHG	//  ret f skey
+      }>	//  ret f skey
+      SWAP	//  ret skey f
+      NOT	//  ret skey _16
+    }>	//  ret skey
+    DROP	//  ret
+  }>
+  get_selling_ad PROC:<{
+    //  address
+    load_data CALLDICT
+    selling_ads GETGLOB	//  address _4
+    267 PUSHINT	//  address _4 _5=267
+    DICTGET
+    NULLSWAPIFNOT	//  sd success
+    1202 THROWIFNOT
+    LDVARUINT16	//  adcoins sd
+    64 LDU	//  adcoins _21 _20
+    DROP	//  adcoins validuntil
   }>
   __test_wrongmessage PROC:<{
     // 
@@ -2321,57 +2753,67 @@ PROGRAM{
     MYADDR	//  ad
     1000 PUSHINT	//  ad _3=1000
     1 PUSHINT	//  ad _3=1000 _4=1
-    0 PUSHINT	//  ad _3=1000 _4=1 _5=0
-    DUP	//  ad _3=1000 _4=1 _5=0 _6=0
-    NEWC	//  ad _3=1000 _4=1 _5=0 _6=0 _7
-    256 STU	//  ad _3=1000 _4=1 _5=0 _9
-    256 STU	//  ad _3=1000 _4=1 _11
-    32 STU	//  ad _3=1000 _13
-    32 STU	//  ad _15
-    MYADDR	//  ad _15 _16
-    STSLICER	//  ad _17
+    NEWC	//  ad _3=1000 _4=1 _5
+    32 STU	//  ad _3=1000 _7
+    32 STU	//  ad _9
+    ENDC	//  ad body2
+    0 PUSHINT	//  ad body2 _12=0
+    DUP	//  ad body2 _12=0 _13=0
+    NEWC	//  ad body2 _12=0 _13=0 _14
+    256 STU	//  ad body2 _12=0 _16
+    256 STU	//  ad body2 _18
+    STREF	//  ad _19
     ENDC	//  ad body
     DUP	//  ad body body
     CTOS	//  ad body sbody
-    1 PUSHINT	//  ad body sbody _22=1
-    0 PUSHINT	//  ad body sbody _22=1 _23=0
-    6 PUSHINT	//  ad body sbody _22=1 _23=0 _24=6
-    NEWC	//  ad body sbody _22=1 _23=0 _24=6 _25
-    4 STU	//  ad body sbody _22=1 _23=0 _27
-    s5 PUSH	//  ad body sbody _22=1 _23=0 _27 ad
-    STSLICER	//  ad body sbody _22=1 _23=0 _28
-    s5 PUSH	//  ad body sbody _22=1 _23=0 _28 ad
-    STSLICER	//  ad body sbody _22=1 _23=0 _29
-    1000 PUSHINT	//  ad body sbody _22=1 _23=0 _29 _30=1000
-    STVARUINT16	//  ad body sbody _22=1 _23=0 _31
-    106 STU	//  ad body sbody _22=1 _43
-    1 STU	//  ad body sbody _45
-    s1 s2 XCHG	//  ad sbody body _45
-    STREF	//  ad sbody _46
+    1 PUSHINT	//  ad body sbody _24=1
+    0 PUSHINT	//  ad body sbody _24=1 _25=0
+    6 PUSHINT	//  ad body sbody _24=1 _25=0 _26=6
+    NEWC	//  ad body sbody _24=1 _25=0 _26=6 _27
+    4 STU	//  ad body sbody _24=1 _25=0 _29
+    s5 PUSH	//  ad body sbody _24=1 _25=0 _29 ad
+    STSLICER	//  ad body sbody _24=1 _25=0 _30
+    s5 PUSH	//  ad body sbody _24=1 _25=0 _30 ad
+    STSLICER	//  ad body sbody _24=1 _25=0 _31
+    1000 PUSHINT	//  ad body sbody _24=1 _25=0 _31 _32=1000
+    STVARUINT16	//  ad body sbody _24=1 _25=0 _33
+    106 STU	//  ad body sbody _24=1 _45
+    1 STU	//  ad body sbody _47
+    s1 s2 XCHG	//  ad sbody body _47
+    STREF	//  ad sbody _48
     ENDC	//  ad sbody full
-    1000 PUSHINT	//  ad sbody full _52=1000
+    1000 PUSHINT	//  ad sbody full _54=1000
     s0 s2 XCHG
     10 PUSHINT
-    -ROT	//  ad _52=1000 _53=10 full sbody
+    -ROT	//  ad _54=1000 _55=10 full sbody
     4 TUPLE	//  ad pila
-    NEWDICT	//  ad pila _56
-    2 PUSHINT	//  ad pila _56 _57=2
-    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _56 _57=2 _58=33451796392292203403440659262546624803323361398262915766836839499908567744559
-    NEWC	//  ad pila _56 _57=2 _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 _59
-    s0 s5 XCHG2	//  _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 pila _56 _57=2 _59 ad
-    STSLICER	//  _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 pila _56 _57=2 _60
-    s1 s4 XCHG	//  _57=2 pila _56 _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 _60
-    256 STU	//  _57=2 pila _56 _62
-    s1 s3 XCHG	//  _56 pila _57=2 _62
-    32 STU	//  _56 pila _64
-    s1 s2 XCHG	//  pila _56 _64
-    STDICT	//  pila _65
+    NEWDICT	//  ad pila _58
+    NEWDICT	//  ad pila _58 _59
+    NEWDICT	//  ad pila _58 _59 _60
+    40 PUSHINT	//  ad pila _58 _59 _60 _61=40
+    2 PUSHINT	//  ad pila _58 _59 _60 _61=40 _62=2
+    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _58 _59 _60 _61=40 _62=2 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559
+    NEWC	//  ad pila _58 _59 _60 _61=40 _62=2 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64
+    s8 PUSH	//  ad pila _58 _59 _60 _61=40 _62=2 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64 ad
+    STSLICER	//  ad pila _58 _59 _60 _61=40 _62=2 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _65
+    256 STU	//  ad pila _58 _59 _60 _61=40 _62=2 _67
+    32 STU	//  ad pila _58 _59 _60 _61=40 _69
+    s0 s6 XCHG2	//  _61=40 pila _58 _59 _60 _69 ad
+    STSLICER	//  _61=40 pila _58 _59 _60 _70
+    s1 s5 XCHG	//  _60 pila _58 _59 _61=40 _70
+    8 STU	//  _60 pila _58 _59 _72
+    s1 s4 XCHG	//  _59 pila _58 _60 _72
+    STDICT	//  _59 pila _58 _73
+    s1 s3 XCHG	//  _58 pila _59 _73
+    STDICT	//  _58 pila _74
+    s1 s2 XCHG	//  pila _58 _74
+    STDICT	//  pila _75
     ENDC	//  pila data
     c4 POP
     CONT:<{
       recv_internal CALLDICT
-    }>	//  pila _71
-    SWAP	//  _71 pila
+    }>	//  pila _81
+    SWAP	//  _81 pila
     {
     c7 PUSH DUP FIRST
     GASLIMITSTEMP SWAP DROP
@@ -2402,12 +2844,12 @@ PROGRAM{
     TRY
     }> PUSHCONT
     ROT INC -1 PUSHINT
-    CALLXVARARGS	//  _79 _80 _81
+    CALLXVARARGS	//  _89 _90 _91
     DROP	//  exit_code gas_usado1
     SWAP	//  gas_usado1 exit_code
     s0 DUMP	//  gas_usado1 exit_code
-    5004 PUSHINT	//  gas_usado1 exit_code _76=5004
-    NEQ	//  gas_usado1 _77
+    504 PUSHINT	//  gas_usado1 exit_code _86=504
+    NEQ	//  gas_usado1 _87
     100 THROWIF
   }>
   __test_wrongsignature PROC:<{
@@ -2415,57 +2857,69 @@ PROGRAM{
     MYADDR	//  ad
     1000 PUSHINT	//  ad _3=1000
     1 PUSHINT	//  ad _3=1000 _4=1
-    0 PUSHINT	//  ad _3=1000 _4=1 _5=0
-    DUP	//  ad _3=1000 _4=1 _5=0 _6=0
-    NEWC	//  ad _3=1000 _4=1 _5=0 _6=0 _7
-    256 STU	//  ad _3=1000 _4=1 _5=0 _9
-    256 STU	//  ad _3=1000 _4=1 _11
-    32 STU	//  ad _3=1000 _13
-    32 STU	//  ad _15
-    MYADDR	//  ad _15 _16
-    STSLICER	//  ad _17
+    NEWC	//  ad _3=1000 _4=1 _5
+    32 STU	//  ad _3=1000 _7
+    32 STU	//  ad _9
+    MYADDR	//  ad _9 _10
+    STSLICER	//  ad _11
+    ENDC	//  ad body2
+    0 PUSHINT	//  ad body2 _14=0
+    DUP	//  ad body2 _14=0 _15=0
+    NEWC	//  ad body2 _14=0 _15=0 _16
+    256 STU	//  ad body2 _14=0 _18
+    256 STU	//  ad body2 _20
+    STREF	//  ad _21
     ENDC	//  ad body
     DUP	//  ad body body
     CTOS	//  ad body sbody
-    1 PUSHINT	//  ad body sbody _22=1
-    0 PUSHINT	//  ad body sbody _22=1 _23=0
-    6 PUSHINT	//  ad body sbody _22=1 _23=0 _24=6
-    NEWC	//  ad body sbody _22=1 _23=0 _24=6 _25
-    4 STU	//  ad body sbody _22=1 _23=0 _27
-    s5 PUSH	//  ad body sbody _22=1 _23=0 _27 ad
-    STSLICER	//  ad body sbody _22=1 _23=0 _28
-    s5 PUSH	//  ad body sbody _22=1 _23=0 _28 ad
-    STSLICER	//  ad body sbody _22=1 _23=0 _29
-    1000 PUSHINT	//  ad body sbody _22=1 _23=0 _29 _30=1000
-    STVARUINT16	//  ad body sbody _22=1 _23=0 _31
-    106 STU	//  ad body sbody _22=1 _43
-    1 STU	//  ad body sbody _45
-    s1 s2 XCHG	//  ad sbody body _45
-    STREF	//  ad sbody _46
+    1 PUSHINT	//  ad body sbody _26=1
+    0 PUSHINT	//  ad body sbody _26=1 _27=0
+    6 PUSHINT	//  ad body sbody _26=1 _27=0 _28=6
+    NEWC	//  ad body sbody _26=1 _27=0 _28=6 _29
+    4 STU	//  ad body sbody _26=1 _27=0 _31
+    s5 PUSH	//  ad body sbody _26=1 _27=0 _31 ad
+    STSLICER	//  ad body sbody _26=1 _27=0 _32
+    s5 PUSH	//  ad body sbody _26=1 _27=0 _32 ad
+    STSLICER	//  ad body sbody _26=1 _27=0 _33
+    1000 PUSHINT	//  ad body sbody _26=1 _27=0 _33 _34=1000
+    STVARUINT16	//  ad body sbody _26=1 _27=0 _35
+    106 STU	//  ad body sbody _26=1 _47
+    1 STU	//  ad body sbody _49
+    s1 s2 XCHG	//  ad sbody body _49
+    STREF	//  ad sbody _50
     ENDC	//  ad sbody full
-    1000 PUSHINT	//  ad sbody full _52=1000
+    1000 PUSHINT	//  ad sbody full _56=1000
     s0 s2 XCHG
     10 PUSHINT
-    -ROT	//  ad _52=1000 _53=10 full sbody
+    -ROT	//  ad _56=1000 _57=10 full sbody
     4 TUPLE	//  ad pila
-    NEWDICT	//  ad pila _56
-    1 PUSHINT	//  ad pila _56 _57=1
-    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _56 _57=1 _58=33451796392292203403440659262546624803323361398262915766836839499908567744559
-    NEWC	//  ad pila _56 _57=1 _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 _59
-    s0 s5 XCHG2	//  _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 pila _56 _57=1 _59 ad
-    STSLICER	//  _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 pila _56 _57=1 _60
-    s1 s4 XCHG	//  _57=1 pila _56 _58=33451796392292203403440659262546624803323361398262915766836839499908567744559 _60
-    256 STU	//  _57=1 pila _56 _62
-    s1 s3 XCHG	//  _56 pila _57=1 _62
-    32 STU	//  _56 pila _64
-    s1 s2 XCHG	//  pila _56 _64
-    STDICT	//  pila _65
+    NEWDICT	//  ad pila _60
+    NEWDICT	//  ad pila _60 _61
+    NEWDICT	//  ad pila _60 _61 _62
+    40 PUSHINT	//  ad pila _60 _61 _62 _63=40
+    1 PUSHINT	//  ad pila _60 _61 _62 _63=40 _64=1
+    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _60 _61 _62 _63=40 _64=1 _65=33451796392292203403440659262546624803323361398262915766836839499908567744559
+    NEWC	//  ad pila _60 _61 _62 _63=40 _64=1 _65=33451796392292203403440659262546624803323361398262915766836839499908567744559 _66
+    s8 PUSH	//  ad pila _60 _61 _62 _63=40 _64=1 _65=33451796392292203403440659262546624803323361398262915766836839499908567744559 _66 ad
+    STSLICER	//  ad pila _60 _61 _62 _63=40 _64=1 _65=33451796392292203403440659262546624803323361398262915766836839499908567744559 _67
+    256 STU	//  ad pila _60 _61 _62 _63=40 _64=1 _69
+    32 STU	//  ad pila _60 _61 _62 _63=40 _71
+    s0 s6 XCHG2	//  _63=40 pila _60 _61 _62 _71 ad
+    STSLICER	//  _63=40 pila _60 _61 _62 _72
+    s1 s5 XCHG	//  _62 pila _60 _61 _63=40 _72
+    8 STU	//  _62 pila _60 _61 _74
+    s1 s4 XCHG	//  _61 pila _60 _62 _74
+    STDICT	//  _61 pila _60 _75
+    s1 s3 XCHG	//  _60 pila _61 _75
+    STDICT	//  _60 pila _76
+    s1 s2 XCHG	//  pila _60 _76
+    STDICT	//  pila _77
     ENDC	//  pila data
     c4 POP
     CONT:<{
       recv_internal CALLDICT
-    }>	//  pila _71
-    SWAP	//  _71 pila
+    }>	//  pila _83
+    SWAP	//  _83 pila
     {
     c7 PUSH DUP FIRST
     GASLIMITSTEMP SWAP DROP
@@ -2496,12 +2950,12 @@ PROGRAM{
     TRY
     }> PUSHCONT
     ROT INC -1 PUSHINT
-    CALLXVARARGS	//  _79 _80 _81
+    CALLXVARARGS	//  _91 _92 _93
     DROP	//  exit_code gas_usado1
     SWAP	//  gas_usado1 exit_code
     s0 DUMP	//  gas_usado1 exit_code
-    5000 PUSHINT	//  gas_usado1 exit_code _76=5000
-    NEQ	//  gas_usado1 _77
+    500 PUSHINT	//  gas_usado1 exit_code _88=500
+    NEQ	//  gas_usado1 _89
     101 THROWIF
   }>
   reconoce_c5 PROCINLINE:<{
@@ -2613,56 +3067,63 @@ PROGRAM{
     x{31323334} PUSHSLICE	//  ad _6 _7
     STSLICER	//  ad _8
     ENDC	//  ad body_to_sign
-    CTOS	//  ad sbody_to_sign
-    17144406180444315820724024059434656869322345781021736120417173811110701150464 PUSHINT	//  ad sbody_to_sign _13=17144406180444315820724024059434656869322345781021736120417173811110701150464
-    86363322427249124616956870879939182925545766143075888967664368716527894077204 PUSHINT	//  ad sbody_to_sign _13=17144406180444315820724024059434656869322345781021736120417173811110701150464 _14=86363322427249124616956870879939182925545766143075888967664368716527894077204
-    NEWC	//  ad sbody_to_sign _13=17144406180444315820724024059434656869322345781021736120417173811110701150464 _14=86363322427249124616956870879939182925545766143075888967664368716527894077204 _15
-    256 STU	//  ad sbody_to_sign _13=17144406180444315820724024059434656869322345781021736120417173811110701150464 _17
-    256 STU	//  ad sbody_to_sign _19
-    SWAP	//  ad _19 sbody_to_sign
-    STSLICER	//  ad _20
+    17144406180444315820724024059434656869322345781021736120417173811110701150464 PUSHINT	//  ad body_to_sign _11=17144406180444315820724024059434656869322345781021736120417173811110701150464
+    86363322427249124616956870879939182925545766143075888967664368716527894077204 PUSHINT	//  ad body_to_sign _11=17144406180444315820724024059434656869322345781021736120417173811110701150464 _12=86363322427249124616956870879939182925545766143075888967664368716527894077204
+    NEWC	//  ad body_to_sign _11=17144406180444315820724024059434656869322345781021736120417173811110701150464 _12=86363322427249124616956870879939182925545766143075888967664368716527894077204 _13
+    256 STU	//  ad body_to_sign _11=17144406180444315820724024059434656869322345781021736120417173811110701150464 _15
+    256 STU	//  ad body_to_sign _17
+    STREF	//  ad _18
     ENDC	//  ad body
     DUP	//  ad body body
     CTOS	//  ad body sbody
-    1 PUSHINT	//  ad body sbody _25=1
-    0 PUSHINT	//  ad body sbody _25=1 _26=0
-    6 PUSHINT	//  ad body sbody _25=1 _26=0 _27=6
-    NEWC	//  ad body sbody _25=1 _26=0 _27=6 _28
-    4 STU	//  ad body sbody _25=1 _26=0 _30
-    s5 PUSH	//  ad body sbody _25=1 _26=0 _30 ad
-    STSLICER	//  ad body sbody _25=1 _26=0 _31
-    s5 PUSH	//  ad body sbody _25=1 _26=0 _31 ad
-    STSLICER	//  ad body sbody _25=1 _26=0 _32
-    1000 PUSHINT	//  ad body sbody _25=1 _26=0 _32 _33=1000
-    STVARUINT16	//  ad body sbody _25=1 _26=0 _34
-    106 STU	//  ad body sbody _25=1 _46
-    1 STU	//  ad body sbody _48
-    s1 s2 XCHG	//  ad sbody body _48
-    STREF	//  ad sbody _49
+    1 PUSHINT	//  ad body sbody _23=1
+    0 PUSHINT	//  ad body sbody _23=1 _24=0
+    6 PUSHINT	//  ad body sbody _23=1 _24=0 _25=6
+    NEWC	//  ad body sbody _23=1 _24=0 _25=6 _26
+    4 STU	//  ad body sbody _23=1 _24=0 _28
+    s5 PUSH	//  ad body sbody _23=1 _24=0 _28 ad
+    STSLICER	//  ad body sbody _23=1 _24=0 _29
+    s5 PUSH	//  ad body sbody _23=1 _24=0 _29 ad
+    STSLICER	//  ad body sbody _23=1 _24=0 _30
+    1000 PUSHINT	//  ad body sbody _23=1 _24=0 _30 _31=1000
+    STVARUINT16	//  ad body sbody _23=1 _24=0 _32
+    106 STU	//  ad body sbody _23=1 _44
+    1 STU	//  ad body sbody _46
+    s1 s2 XCHG	//  ad sbody body _46
+    STREF	//  ad sbody _47
     ENDC	//  ad sbody full
-    20000000 PUSHINT	//  ad sbody full _55=20000000
+    20000000 PUSHINT	//  ad sbody full _53=20000000
     s0 s2 XCHG
     10 PUSHINT
-    -ROT	//  ad _55=20000000 _56=10 full sbody
+    -ROT	//  ad _53=20000000 _54=10 full sbody
     4 TUPLE	//  ad pila
-    NEWDICT	//  ad pila _59
-    1 PUSHINT	//  ad pila _59 _60=1
-    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _59 _60=1 _61=33451796392292203403440659262546624803323361398262915766836839499908567744559
-    NEWC	//  ad pila _59 _60=1 _61=33451796392292203403440659262546624803323361398262915766836839499908567744559 _62
-    s0 s5 XCHG2	//  _61=33451796392292203403440659262546624803323361398262915766836839499908567744559 pila _59 _60=1 _62 ad
-    STSLICER	//  _61=33451796392292203403440659262546624803323361398262915766836839499908567744559 pila _59 _60=1 _63
-    s1 s4 XCHG	//  _60=1 pila _59 _61=33451796392292203403440659262546624803323361398262915766836839499908567744559 _63
-    256 STU	//  _60=1 pila _59 _65
-    s1 s3 XCHG	//  _59 pila _60=1 _65
-    32 STU	//  _59 pila _67
-    s1 s2 XCHG	//  pila _59 _67
-    STDICT	//  pila _68
+    NEWDICT	//  ad pila _57
+    NEWDICT	//  ad pila _57 _58
+    NEWDICT	//  ad pila _57 _58 _59
+    40 PUSHINT	//  ad pila _57 _58 _59 _60=40
+    1 PUSHINT	//  ad pila _57 _58 _59 _60=40 _61=1
+    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _57 _58 _59 _60=40 _61=1 _62=33451796392292203403440659262546624803323361398262915766836839499908567744559
+    NEWC	//  ad pila _57 _58 _59 _60=40 _61=1 _62=33451796392292203403440659262546624803323361398262915766836839499908567744559 _63
+    s8 PUSH	//  ad pila _57 _58 _59 _60=40 _61=1 _62=33451796392292203403440659262546624803323361398262915766836839499908567744559 _63 ad
+    STSLICER	//  ad pila _57 _58 _59 _60=40 _61=1 _62=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64
+    256 STU	//  ad pila _57 _58 _59 _60=40 _61=1 _66
+    32 STU	//  ad pila _57 _58 _59 _60=40 _68
+    s0 s6 XCHG2	//  _60=40 pila _57 _58 _59 _68 ad
+    STSLICER	//  _60=40 pila _57 _58 _59 _69
+    s1 s5 XCHG	//  _59 pila _57 _58 _60=40 _69
+    8 STU	//  _59 pila _57 _58 _71
+    s1 s4 XCHG	//  _58 pila _57 _59 _71
+    STDICT	//  _58 pila _57 _72
+    s1 s3 XCHG	//  _57 pila _58 _72
+    STDICT	//  _57 pila _73
+    s1 s2 XCHG	//  pila _57 _73
+    STDICT	//  pila _74
     ENDC	//  pila data
     c4 POP
     CONT:<{
       recv_internal CALLDICT
-    }>	//  pila _74
-    SWAP	//  _74 pila
+    }>	//  pila _80
+    SWAP	//  _80 pila
     {
     c7 PUSH DUP FIRST
     GASLIMITSTEMP SWAP DROP
@@ -2693,12 +3154,12 @@ PROGRAM{
     TRY
     }> PUSHCONT
     ROT INC -1 PUSHINT
-    CALLXVARARGS	//  _82 _83 _84
+    CALLXVARARGS	//  _88 _89 _90
     DROP	//  exit_code gas_usado1
     SWAP	//  gas_usado1 exit_code
     s0 DUMP	//  gas_usado1 exit_code
-    5001 PUSHINT	//  gas_usado1 exit_code _79=5001
-    NEQ	//  gas_usado1 _80
+    501 PUSHINT	//  gas_usado1 exit_code _85=501
+    NEQ	//  gas_usado1 _86
     101 THROWIF
   }>
   __test_add_ad_fewcoins PROC:<{
@@ -2710,51 +3171,52 @@ PROGRAM{
     32 STU	//  ad _3=1000 _7
     32 STU	//  ad _9
     ENDC	//  ad body_to_sign
-    CTOS	//  ad sbody_to_sign
-    DUP	//  ad sbody_to_sign sbody_to_sign
-    HASHSU	//  ad sbody_to_sign tmphash
-    29357836411124981285495765108012652830917040149534034395677251036887651600221 PUSHINT	//  ad sbody_to_sign tmphash _16=29357836411124981285495765108012652830917040149534034395677251036887651600221
-    NEQ	//  ad sbody_to_sign _17
-    100 THROWIF
-    52055047891093896122722321857518565569980897462306809874946417405718241984526 PUSHINT	//  ad sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526
-    95817253206089097193931663397172458887240792975504841423923031368924763547095 PUSHINT	//  ad sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526 _21=95817253206089097193931663397172458887240792975504841423923031368924763547095
-    NEWC	//  ad sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526 _21=95817253206089097193931663397172458887240792975504841423923031368924763547095 _22
-    256 STU	//  ad sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526 _24
-    256 STU	//  ad sbody_to_sign _26
-    SWAP	//  ad _26 sbody_to_sign
-    STSLICER	//  ad _27
+    52055047891093896122722321857518565569980897462306809874946417405718241984526 PUSHINT	//  ad body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526
+    95817253206089097193931663397172458887240792975504841423923031368924763547095 PUSHINT	//  ad body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526 _13=95817253206089097193931663397172458887240792975504841423923031368924763547095
+    NEWC	//  ad body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526 _13=95817253206089097193931663397172458887240792975504841423923031368924763547095 _14
+    256 STU	//  ad body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526 _16
+    256 STU	//  ad body_to_sign _18
+    STREF	//  ad _19
     ENDC	//  ad body
     DUP	//  ad body body
     CTOS	//  ad body sbody
-    1 PUSHINT	//  ad body sbody _32=1
-    0 PUSHINT	//  ad body sbody _32=1 _33=0
-    6 PUSHINT	//  ad body sbody _32=1 _33=0 _34=6
-    NEWC	//  ad body sbody _32=1 _33=0 _34=6 _35
-    4 STU	//  ad body sbody _32=1 _33=0 _37
-    s5 PUSH	//  ad body sbody _32=1 _33=0 _37 ad
-    STSLICER	//  ad body sbody _32=1 _33=0 _38
-    s5 PUSH	//  ad body sbody _32=1 _33=0 _38 ad
-    STSLICER	//  ad body sbody _32=1 _33=0 _39
-    1000 PUSHINT	//  ad body sbody _32=1 _33=0 _39 _40=1000
-    STVARUINT16	//  ad body sbody _32=1 _33=0 _41
-    106 STU	//  ad body sbody _32=1 _53
-    1 STU	//  ad body sbody _55
-    s1 s2 XCHG	//  ad sbody body _55
-    STREF	//  ad sbody _56
+    1 PUSHINT	//  ad body sbody _24=1
+    0 PUSHINT	//  ad body sbody _24=1 _25=0
+    6 PUSHINT	//  ad body sbody _24=1 _25=0 _26=6
+    NEWC	//  ad body sbody _24=1 _25=0 _26=6 _27
+    4 STU	//  ad body sbody _24=1 _25=0 _29
+    s5 PUSH	//  ad body sbody _24=1 _25=0 _29 ad
+    STSLICER	//  ad body sbody _24=1 _25=0 _30
+    s5 PUSH	//  ad body sbody _24=1 _25=0 _30 ad
+    STSLICER	//  ad body sbody _24=1 _25=0 _31
+    1000 PUSHINT	//  ad body sbody _24=1 _25=0 _31 _32=1000
+    STVARUINT16	//  ad body sbody _24=1 _25=0 _33
+    106 STU	//  ad body sbody _24=1 _45
+    1 STU	//  ad body sbody _47
+    s1 s2 XCHG	//  ad sbody body _47
+    STREF	//  ad sbody _48
     ENDC	//  ad sbody full
-    20000000 PUSHINT	//  ad sbody full _62=20000000
+    20000000 PUSHINT	//  ad sbody full _54=20000000
     s0 s2 XCHG
     10 PUSHINT
-    -ROT	//  ad _62=20000000 _63=10 full sbody
+    -ROT	//  ad _54=20000000 _55=10 full sbody
     4 TUPLE	//  ad pila
-    NEWDICT	//  ad pila _66
-    1 PUSHINT	//  ad pila _66 _67=1
-    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559
-    NEWC	//  ad pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559 _69
-    s5 PUSH	//  ad pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559 _69 ad
-    STSLICER	//  ad pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559 _70
-    256 STU	//  ad pila _66 _67=1 _72
-    32 STU	//  ad pila _66 _74
+    NEWDICT	//  ad pila _58
+    NEWDICT	//  ad pila _58 _59
+    NEWDICT	//  ad pila _58 _59 _60
+    40 PUSHINT	//  ad pila _58 _59 _60 _61=40
+    1 PUSHINT	//  ad pila _58 _59 _60 _61=40 _62=1
+    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  ad pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559
+    NEWC	//  ad pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64
+    s8 PUSH	//  ad pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64 ad
+    STSLICER	//  ad pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _65
+    256 STU	//  ad pila _58 _59 _60 _61=40 _62=1 _67
+    32 STU	//  ad pila _58 _59 _60 _61=40 _69
+    s6 PUSH	//  ad pila _58 _59 _60 _61=40 _69 ad
+    STSLICER	//  ad pila _58 _59 _60 _61=40 _70
+    8 STU	//  ad pila _58 _59 _60 _72
+    STDICT	//  ad pila _58 _59 _73
+    STDICT	//  ad pila _58 _74
     STDICT	//  ad pila _75
     ENDC	//  ad pila data
     c4 POP
@@ -2796,7 +3258,7 @@ PROGRAM{
     DROP	//  ad exit_code gas_usado1
     SWAP	//  ad gas_usado1 exit_code
     s0 DUMP	//  ad gas_usado1 exit_code
-    1102 PUSHINT	//  ad gas_usado1 exit_code _86=1102
+    1003 PUSHINT	//  ad gas_usado1 exit_code _86=1003
     NEQ	//  ad gas_usado1 _87
     101 THROWIF
     c4 PUSH	//  ad gas_usado1 _90
@@ -2825,51 +3287,52 @@ PROGRAM{
     32 STU	//  myaddress _3=1000 _7
     32 STU	//  myaddress _9
     ENDC	//  myaddress body_to_sign
-    CTOS	//  myaddress sbody_to_sign
-    DUP	//  myaddress sbody_to_sign sbody_to_sign
-    HASHSU	//  myaddress sbody_to_sign tmphash
-    29357836411124981285495765108012652830917040149534034395677251036887651600221 PUSHINT	//  myaddress sbody_to_sign tmphash _16=29357836411124981285495765108012652830917040149534034395677251036887651600221
-    NEQ	//  myaddress sbody_to_sign _17
-    100 THROWIF
-    52055047891093896122722321857518565569980897462306809874946417405718241984526 PUSHINT	//  myaddress sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526
-    95817253206089097193931663397172458887240792975504841423923031368924763547095 PUSHINT	//  myaddress sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526 _21=95817253206089097193931663397172458887240792975504841423923031368924763547095
-    NEWC	//  myaddress sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526 _21=95817253206089097193931663397172458887240792975504841423923031368924763547095 _22
-    256 STU	//  myaddress sbody_to_sign _20=52055047891093896122722321857518565569980897462306809874946417405718241984526 _24
-    256 STU	//  myaddress sbody_to_sign _26
-    SWAP	//  myaddress _26 sbody_to_sign
-    STSLICER	//  myaddress _27
+    52055047891093896122722321857518565569980897462306809874946417405718241984526 PUSHINT	//  myaddress body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526
+    95817253206089097193931663397172458887240792975504841423923031368924763547095 PUSHINT	//  myaddress body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526 _13=95817253206089097193931663397172458887240792975504841423923031368924763547095
+    NEWC	//  myaddress body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526 _13=95817253206089097193931663397172458887240792975504841423923031368924763547095 _14
+    256 STU	//  myaddress body_to_sign _12=52055047891093896122722321857518565569980897462306809874946417405718241984526 _16
+    256 STU	//  myaddress body_to_sign _18
+    STREF	//  myaddress _19
     ENDC	//  myaddress body
     DUP	//  myaddress body body
     CTOS	//  myaddress body sbody
-    1 PUSHINT	//  myaddress body sbody _32=1
-    0 PUSHINT	//  myaddress body sbody _32=1 _33=0
-    6 PUSHINT	//  myaddress body sbody _32=1 _33=0 _34=6
-    NEWC	//  myaddress body sbody _32=1 _33=0 _34=6 _35
-    4 STU	//  myaddress body sbody _32=1 _33=0 _37
-    s5 PUSH	//  myaddress body sbody _32=1 _33=0 _37 myaddress
-    STSLICER	//  myaddress body sbody _32=1 _33=0 _38
-    s5 PUSH	//  myaddress body sbody _32=1 _33=0 _38 myaddress
-    STSLICER	//  myaddress body sbody _32=1 _33=0 _39
-    10029000000 PUSHINT	//  myaddress body sbody _32=1 _33=0 _39 _40=10029000000
-    STVARUINT16	//  myaddress body sbody _32=1 _33=0 _41
-    106 STU	//  myaddress body sbody _32=1 _53
-    1 STU	//  myaddress body sbody _55
-    s1 s2 XCHG	//  myaddress sbody body _55
-    STREF	//  myaddress sbody _56
+    1 PUSHINT	//  myaddress body sbody _24=1
+    0 PUSHINT	//  myaddress body sbody _24=1 _25=0
+    6 PUSHINT	//  myaddress body sbody _24=1 _25=0 _26=6
+    NEWC	//  myaddress body sbody _24=1 _25=0 _26=6 _27
+    4 STU	//  myaddress body sbody _24=1 _25=0 _29
+    s5 PUSH	//  myaddress body sbody _24=1 _25=0 _29 myaddress
+    STSLICER	//  myaddress body sbody _24=1 _25=0 _30
+    s5 PUSH	//  myaddress body sbody _24=1 _25=0 _30 myaddress
+    STSLICER	//  myaddress body sbody _24=1 _25=0 _31
+    10290000000 PUSHINT	//  myaddress body sbody _24=1 _25=0 _31 _32=10290000000
+    STVARUINT16	//  myaddress body sbody _24=1 _25=0 _33
+    106 STU	//  myaddress body sbody _24=1 _45
+    1 STU	//  myaddress body sbody _47
+    s1 s2 XCHG	//  myaddress sbody body _47
+    STREF	//  myaddress sbody _48
     ENDC	//  myaddress sbody full
-    20000000 PUSHINT	//  myaddress sbody full _62=20000000
+    20000000 PUSHINT	//  myaddress sbody full _54=20000000
     s0 s2 XCHG
     10 PUSHINT
-    -ROT	//  myaddress _62=20000000 _63=10 full sbody
+    -ROT	//  myaddress _54=20000000 _55=10 full sbody
     4 TUPLE	//  myaddress pila
-    NEWDICT	//  myaddress pila _66
-    1 PUSHINT	//  myaddress pila _66 _67=1
-    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  myaddress pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559
-    NEWC	//  myaddress pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559 _69
-    s5 PUSH	//  myaddress pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559 _69 myaddress
-    STSLICER	//  myaddress pila _66 _67=1 _68=33451796392292203403440659262546624803323361398262915766836839499908567744559 _70
-    256 STU	//  myaddress pila _66 _67=1 _72
-    32 STU	//  myaddress pila _66 _74
+    NEWDICT	//  myaddress pila _58
+    NEWDICT	//  myaddress pila _58 _59
+    NEWDICT	//  myaddress pila _58 _59 _60
+    40 PUSHINT	//  myaddress pila _58 _59 _60 _61=40
+    1 PUSHINT	//  myaddress pila _58 _59 _60 _61=40 _62=1
+    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  myaddress pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559
+    NEWC	//  myaddress pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64
+    s8 PUSH	//  myaddress pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _64 myaddress
+    STSLICER	//  myaddress pila _58 _59 _60 _61=40 _62=1 _63=33451796392292203403440659262546624803323361398262915766836839499908567744559 _65
+    256 STU	//  myaddress pila _58 _59 _60 _61=40 _62=1 _67
+    32 STU	//  myaddress pila _58 _59 _60 _61=40 _69
+    s6 PUSH	//  myaddress pila _58 _59 _60 _61=40 _69 myaddress
+    STSLICER	//  myaddress pila _58 _59 _60 _61=40 _70
+    8 STU	//  myaddress pila _58 _59 _60 _72
+    STDICT	//  myaddress pila _58 _59 _73
+    STDICT	//  myaddress pila _58 _74
     STDICT	//  myaddress pila _75
     ENDC	//  myaddress pila data
     c4 POP
@@ -2907,7 +3370,7 @@ PROGRAM{
     TRY
     }> PUSHCONT
     ROT INC -1 PUSHINT
-    CALLXVARARGS	//  myaddress _236 _237 _238
+    CALLXVARARGS	//  myaddress _268 _269 _270
     DROP	//  myaddress exit_code gas_usado1
     SWAP	//  myaddress gas_usado1 exit_code
     s0 DUMP	//  myaddress gas_usado1 exit_code
@@ -2929,84 +3392,233 @@ PROGRAM{
     s0 DUMP	//  myaddress gas_usado1 ds lseqno
     2 EQINT	//  myaddress gas_usado1 ds _112
     104 THROWIFNOT
-    LDDICT	//  myaddress gas_usado1 _246 _245
-    DROP	//  myaddress gas_usado1 m
-    DUP	//  myaddress gas_usado1 m m
-    DICTEMPTY	//  myaddress gas_usado1 m _118
-    105 THROWIF
-    s2 PUSH	//  myaddress gas_usado1 m csender
-    11 PUSHINT	//  myaddress gas_usado1 m csender _122=11
-    SDSKIPFIRST	//  myaddress gas_usado1 m csender
-    256 LDU	//  myaddress gas_usado1 m _248 _247
-    DROP	//  myaddress gas_usado1 m senderkey
-    SWAP
-    8 PUSHPOW2	//  myaddress gas_usado1 senderkey m _130=256
-    DICTUGET
-    NULLSWAPIFNOT	//  myaddress gas_usado1 sd success
-    -1 EQINT	//  myaddress gas_usado1 sd _134
+    LDMSGADDR	//  myaddress gas_usado1 _115 ds
+    s1 s3 XCPU	//  myaddress gas_usado1 ds _115 myaddress
+    SDEQ	//  myaddress gas_usado1 ds _117
+    105 THROWIFNOT
+    8 LDU	//  myaddress gas_usado1 _120 ds
+    SWAP	//  myaddress gas_usado1 ds _120
+    40 EQINT	//  myaddress gas_usado1 ds _124
     106 THROWIFNOT
+    LDDICT	//  myaddress gas_usado1 sa ds
+    LDDICT	//  myaddress gas_usado1 sa ba ds
+    LDDICT	//  myaddress gas_usado1 sa ba _286 _285
+    DROP	//  myaddress gas_usado1 sa ba pba
+    s2 PUSH	//  myaddress gas_usado1 sa ba pba sa
+    DICTEMPTY	//  myaddress gas_usado1 sa ba pba _136
+    106 THROWIF
+    SWAP	//  myaddress gas_usado1 sa pba ba
+    DICTEMPTY	//  myaddress gas_usado1 sa pba _139
+    107 THROWIFNOT
+    DICTEMPTY	//  myaddress gas_usado1 sa _142
+    107 THROWIFNOT
+    s2 s(-1) PUXC
+    267 PUSHINT	//  myaddress gas_usado1 myaddress sa _146=267
+    DICTGET
+    NULLSWAPIFNOT	//  myaddress gas_usado1 sd success
+    -1 EQINT	//  myaddress gas_usado1 sd _150
+    108 THROWIFNOT
     LDVARUINT16	//  myaddress gas_usado1 rec sd
     SWAP	//  myaddress gas_usado1 sd rec
     s0 DUMP	//  myaddress gas_usado1 sd rec
-    10000000000 PUSHINT	//  myaddress gas_usado1 sd rec _142=10000000000
-    EQUAL	//  myaddress gas_usado1 sd _143
-    107 THROWIFNOT
-    32 LDU	//  myaddress gas_usado1 _254 _253
+    10000000000 PUSHINT	//  myaddress gas_usado1 sd rec _158=10000000000
+    EQUAL	//  myaddress gas_usado1 sd _159
+    109 THROWIFNOT
+    64 LDU	//  myaddress gas_usado1 _292 _291
     DROP	//  myaddress gas_usado1 valid
     s0 DUMP	//  myaddress gas_usado1 valid
-    NOW	//  myaddress gas_usado1 valid _152
-    SUB	//  myaddress gas_usado1 _153
-    3600 PUSHINT	//  myaddress gas_usado1 _153 _154=3600
+    NOW	//  myaddress gas_usado1 valid _168
+    SUB	//  myaddress gas_usado1 _169
+    3600 PUSHINT	//  myaddress gas_usado1 _169 _170=3600
     DIV	//  myaddress gas_usado1 hours_to_expire
-    240 PUSHINT	//  myaddress gas_usado1 hours_to_expire _157=240
-    EQUAL	//  myaddress gas_usado1 _158
-    108 THROWIFNOT
+    240 PUSHINT	//  myaddress gas_usado1 hours_to_expire _173=240
+    EQUAL	//  myaddress gas_usado1 _174
+    110 THROWIFNOT
     reconoce_c5 INLINECALLDICT	//  myaddress gas_usado1 actions
     s0 DUMP	//  myaddress gas_usado1 actions
     DUP	//  myaddress gas_usado1 actions actions
-    TLEN	//  myaddress gas_usado1 actions _165
-    1 EQINT	//  myaddress gas_usado1 actions _167
-    109 THROWIFNOT
-    0 INDEX	//  myaddress gas_usado1 a0
-    1 INDEX	//  myaddress gas_usado1 _174
+    TLEN	//  myaddress gas_usado1 actions _181
+    2 EQINT	//  myaddress gas_usado1 actions _183
+    111 THROWIFNOT
+    DUP	//  myaddress gas_usado1 actions actions
+    0 INDEX	//  myaddress gas_usado1 actions a0
+    1 INDEX	//  myaddress gas_usado1 actions _190
+    CTOS	//  myaddress gas_usado1 actions sb0
+    s0 DUMP	//  myaddress gas_usado1 actions sb0
+    4 LDU	//  myaddress gas_usado1 actions flags sb0
+    SWAP	//  myaddress gas_usado1 actions sb0 flags
+    s0 DUMP	//  myaddress gas_usado1 actions sb0 flags
+    6 EQINT	//  myaddress gas_usado1 actions sb0 _202
+    112 THROWIFNOT
+    2 LDU	//  myaddress gas_usado1 actions sa sb0
+    SWAP	//  myaddress gas_usado1 actions sb0 sa
+    s0 DUMP	//  myaddress gas_usado1 actions sb0 sa
+    0 EQINT	//  myaddress gas_usado1 actions sb0 _212
+    113 THROWIFNOT
+    LDMSGADDR	//  myaddress gas_usado1 actions ra sb0
+    s1 s4 XCPU	//  myaddress gas_usado1 actions sb0 ra myaddress
+    SDEQ	//  myaddress gas_usado1 actions sb0 _218
+    114 THROWIFNOT
+    LDVARUINT16	//  myaddress gas_usado1 actions _300 _299
+    DROP	//  myaddress gas_usado1 actions rcoins
+    s0 DUMP	//  myaddress gas_usado1 actions rcoins
+    112000000 PUSHINT	//  myaddress gas_usado1 actions rcoins _226=112000000
+    EQUAL	//  myaddress gas_usado1 actions _227
+    115 THROWIFNOT
+    1 INDEX	//  myaddress gas_usado1 a1
+    1 INDEX	//  myaddress gas_usado1 _233
     CTOS	//  myaddress gas_usado1 sb0
     s0 DUMP	//  myaddress gas_usado1 sb0
     4 LDU	//  myaddress gas_usado1 flags sb0
     SWAP	//  myaddress gas_usado1 sb0 flags
-    2 EQINT	//  myaddress gas_usado1 sb0 _184
-    110 THROWIFNOT
+    s0 DUMP	//  myaddress gas_usado1 sb0 flags
+    6 EQINT	//  myaddress gas_usado1 sb0 _244
+    116 THROWIFNOT
     2 LDU	//  myaddress gas_usado1 sa sb0
     SWAP	//  myaddress gas_usado1 sb0 sa
     s0 DUMP	//  myaddress gas_usado1 sb0 sa
-    0 EQINT	//  myaddress gas_usado1 sb0 _194
-    111 THROWIFNOT
+    0 EQINT	//  myaddress gas_usado1 sb0 _253
+    117 THROWIFNOT
     LDMSGADDR	//  myaddress gas_usado1 ra sb0
     s0 s3 XCHG	//  sb0 gas_usado1 ra myaddress
-    SDEQ	//  sb0 gas_usado1 _200
-    112 THROWIFNOT
+    SDEQ	//  sb0 gas_usado1 _258
+    114 THROWIFNOT
     SWAP	//  gas_usado1 sb0
-    LDVARUINT16	//  gas_usado1 _262 _261
+    LDVARUINT16	//  gas_usado1 _308 _307
     DROP	//  gas_usado1 rcoins
     s0 DUMP	//  gas_usado1 rcoins
-    19000000 PUSHINT	//  gas_usado1 rcoins _208=19000000
-    EQUAL	//  gas_usado1 _209
-    112 THROWIFNOT
-    NEWDICT	//  gas_usado1 tdic
-    NEWC	//  gas_usado1 tdic otra
-    s0 DUMP	//  gas_usado1 tdic otra
-    STDICT	//  gas_usado1 _218
-    ENDC	//  gas_usado1 f
-    s0 DUMP	//  gas_usado1 f
-    CTOS	//  gas_usado1 af
-    DUP	//  gas_usado1 af af
-    SBITS	//  gas_usado1 af laf
-    s0 DUMP	//  gas_usado1 af _227
-    DROP	//  gas_usado1 af
-    1 LDU	//  gas_usado1 fcont af
-    SWAP	//  gas_usado1 af fcont
-    s0 DUMP	//  gas_usado1 af _233
-    DROP	//  gas_usado1 af
-    s0 DUMP	//  gas_usado1 _235
-    DROP	//  gas_usado1
+    168000000 PUSHINT	//  gas_usado1 rcoins _265=168000000
+    EQUAL	//  gas_usado1 _266
+    118 THROWIFNOT
+  }>
+  __test_release_coins PROC:<{
+    // 
+    MYADDR	//  myaddress
+    456 PUSHINT	//  myaddress _3=456
+    10 PUSHINT	//  myaddress _3=456 _4=10
+    4 PUSHINT	//  myaddress _3=456 _4=10 _5=4
+    1100 PUSHINT	//  myaddress _3=456 _4=10 _5=4 _6=1100
+    2 PUSHINT	//  myaddress _3=456 _4=10 _5=4 _6=1100 _7=2
+    NEWC	//  myaddress _3=456 _4=10 _5=4 _6=1100 _7=2 _8
+    32 STU	//  myaddress _3=456 _4=10 _5=4 _6=1100 _10
+    32 STU	//  myaddress _3=456 _4=10 _5=4 _12
+    3 STU	//  myaddress _3=456 _4=10 _14
+    8 STU	//  myaddress _3=456 _16
+    256 STU	//  myaddress _18
+    5000000000 PUSHINT	//  myaddress _18 _19=5000000000
+    STVARUINT16	//  myaddress _20
+    ENDC	//  myaddress body_to_sign
+    DUP	//  myaddress body_to_sign body_to_sign
+    HASHCU	//  myaddress body_to_sign tmphash
+    s0 DUMP	//  myaddress body_to_sign tmphash
+    41910469873814935573045619605681105550490891720547882356612539347020904940347 PUSHINT	//  myaddress body_to_sign tmphash _27=41910469873814935573045619605681105550490891720547882356612539347020904940347
+    NEQ	//  myaddress body_to_sign _28
+    100 THROWIF
+    82701729945111986453213037551865380431702351055024665806508199474185969389069 PUSHINT	//  myaddress body_to_sign _31=82701729945111986453213037551865380431702351055024665806508199474185969389069
+    18746493564662722219875016906149364700322293338652852253524997719029730376795 PUSHINT	//  myaddress body_to_sign _31=82701729945111986453213037551865380431702351055024665806508199474185969389069 _32=18746493564662722219875016906149364700322293338652852253524997719029730376795
+    NEWC	//  myaddress body_to_sign _31=82701729945111986453213037551865380431702351055024665806508199474185969389069 _32=18746493564662722219875016906149364700322293338652852253524997719029730376795 _33
+    256 STU	//  myaddress body_to_sign _31=82701729945111986453213037551865380431702351055024665806508199474185969389069 _35
+    256 STU	//  myaddress body_to_sign _37
+    STREF	//  myaddress _38
+    ENDC	//  myaddress body
+    DUP	//  myaddress body body
+    CTOS	//  myaddress body sbody
+    1 PUSHINT	//  myaddress body sbody _43=1
+    0 PUSHINT	//  myaddress body sbody _43=1 _44=0
+    6 PUSHINT	//  myaddress body sbody _43=1 _44=0 _45=6
+    NEWC	//  myaddress body sbody _43=1 _44=0 _45=6 _46
+    4 STU	//  myaddress body sbody _43=1 _44=0 _48
+    s5 PUSH	//  myaddress body sbody _43=1 _44=0 _48 myaddress
+    STSLICER	//  myaddress body sbody _43=1 _44=0 _49
+    s5 PUSH	//  myaddress body sbody _43=1 _44=0 _49 myaddress
+    STSLICER	//  myaddress body sbody _43=1 _44=0 _50
+    200000000 PUSHINT	//  myaddress body sbody _43=1 _44=0 _50 _51=200000000
+    STVARUINT16	//  myaddress body sbody _43=1 _44=0 _52
+    106 STU	//  myaddress body sbody _43=1 _64
+    1 STU	//  myaddress body sbody _66
+    s1 s2 XCHG	//  myaddress sbody body _66
+    STREF	//  myaddress sbody _67
+    ENDC	//  myaddress sbody full
+    20000000 PUSHINT	//  myaddress sbody full _73=20000000
+    s0 s2 XCHG
+    10 PUSHINT
+    -ROT	//  myaddress _73=20000000 _74=10 full sbody
+    4 TUPLE	//  myaddress pila
+    NEWDICT	//  myaddress pila selldict
+    NOW	//  myaddress pila selldict _79
+    10000 PUSHINT	//  myaddress pila selldict _79 _80=10000
+    ADD	//  myaddress pila selldict _81
+    NEWC	//  myaddress pila selldict _81 _82
+    10000000000 PUSHINT	//  myaddress pila selldict _81 _82 _83=10000000000
+    STVARUINT16	//  myaddress pila selldict _81 _84
+    64 STU	//  myaddress pila selldict _86
+    ENDC	//  myaddress pila selldict datad
+    CTOS	//  myaddress pila selldict sdatad
+    s3 s1 PUXC
+    267 PUSHINT	//  myaddress pila sdatad myaddress selldict _92=267
+    DICTADD	//  myaddress pila selldict success
+    800 THROWIFNOT
+    NEWDICT	//  myaddress pila selldict _97
+    NEWDICT	//  myaddress pila selldict _97 _98
+    40 PUSHINT	//  myaddress pila selldict _97 _98 _99=40
+    2 PUSHINT	//  myaddress pila selldict _97 _98 _99=40 _100=2
+    33451796392292203403440659262546624803323361398262915766836839499908567744559 PUSHINT	//  myaddress pila selldict _97 _98 _99=40 _100=2 _101=33451796392292203403440659262546624803323361398262915766836839499908567744559
+    NEWC	//  myaddress pila selldict _97 _98 _99=40 _100=2 _101=33451796392292203403440659262546624803323361398262915766836839499908567744559 _102
+    s8 PUSH	//  myaddress pila selldict _97 _98 _99=40 _100=2 _101=33451796392292203403440659262546624803323361398262915766836839499908567744559 _102 myaddress
+    STSLICER	//  myaddress pila selldict _97 _98 _99=40 _100=2 _101=33451796392292203403440659262546624803323361398262915766836839499908567744559 _103
+    256 STU	//  myaddress pila selldict _97 _98 _99=40 _100=2 _105
+    32 STU	//  myaddress pila selldict _97 _98 _99=40 _107
+    s0 s6 XCHG2	//  _99=40 pila selldict _97 _98 _107 myaddress
+    STSLICER	//  _99=40 pila selldict _97 _98 _108
+    s1 s5 XCHG	//  _98 pila selldict _97 _99=40 _108
+    8 STU	//  _98 pila selldict _97 _110
+    s1 s2 XCHG	//  _98 pila _97 selldict _110
+    STDICT	//  _98 pila _97 _111
+    s1 s3 XCHG	//  _97 pila _98 _111
+    STDICT	//  _97 pila _112
+    s1 s2 XCHG	//  pila _97 _112
+    STDICT	//  pila _113
+    ENDC	//  pila data
+    c4 POP
+    CONT:<{
+      recv_internal CALLDICT
+    }>	//  pila _119
+    SWAP	//  _119 pila
+    {
+    c7 PUSH DUP FIRST
+    GASLIMITSTEMP SWAP DROP
+    11 SETINDEX 0 SETINDEX c7 POP
+    } : save-gas-remaining
+    {
+    GASLIMITSTEMP SWAP DROP
+    11 GETPARAM SWAP SUB
+    145 PUSHINT SUB
+    } : compute-gas-used
+    NEWC ENDC c5 POP
+    RESETLOADEDCELLS
+    255 PUSHINT EXPLODEVAR
+    DUP INC ROLLX
+    <{
+    <{
+    save-gas-remaining
+    EXECUTE
+    compute-gas-used
+    DEPTH DEC ROLLREVX
+    DEPTH DEC TUPLEVAR
+    ZERO ROTREV
+    }> PUSHCONT
+    <{
+    compute-gas-used
+    ROT DROP NIL
+    }> PUSHCONT
+    TRY
+    }> PUSHCONT
+    ROT INC -1 PUSHINT
+    CALLXVARARGS	//  _129 _130 _131
+    DROP	//  exit_code gas_usado1
+    SWAP	//  gas_usado1 exit_code
+    s0 DUMP	//  gas_usado1 exit_code
+    0 NEQINT	//  gas_usado1 _125
+    101 THROWIF
   }>
 }END>c

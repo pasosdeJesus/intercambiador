@@ -1,0 +1,24 @@
+
+
+slice slice_to_hexstr(slice s) {
+  tuple dhex = unsafe_tuple(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "F"]);
+  int ls = s.slice_bits();
+  if (ls > 8) {
+    slice ant = s~load_bits(ls - 8);
+    int u = s~load_uint(8);
+    slice c1 = slice_to_hexstr(ant);
+    cell r = begin_cell()
+      .store_slice(c1)
+      .store_slice(dhex.at(u / 16))
+      .store_slice(dhex.at(u % 16))
+      .end_cell();
+    return r.begin_parse();
+  }
+  int u = s~load_uint(ls);
+  cell r = begin_cell()
+    .store_slice(dhex.at(u / 16))
+    .store_slice(dhex.at(u % 16))
+    .end_cell();
+  return r.begin_parse();
+}
+

@@ -34,7 +34,7 @@ int __test_wrongmessage() {
       sbody   ;; msg_body
   ]);
 
-  ;; We build storage with owner address as manager and no_address
+  ;; We build storage with manager address as manager and no_address
   cell data = begin_cell()             ;; initial data of contract
       .store_slice(ad)               ;; counter
       .store_uint(0, 256)              ;; none_address
@@ -54,14 +54,18 @@ int __test_wrongseqno() {
 
   slice ad = my_address();
 
+  var body2 = begin_cell()
+    .store_uint(1, 32) ;; seqno
+    .store_uint(1000, 32) ;; op  
+    .end_cell();
+
   var body = begin_cell()
     .store_uint(0, 256) ;; signature part 1
     .store_uint(0, 256) ;; signature part 2
-    .store_uint(1, 32) ;; seqno
-    .store_uint(1000, 32) ;; op  
-    .store_slice(my_address())
-  .end_cell();
-  var sbody = body.begin_parse();
+    .store_ref(body2)
+    .end_cell();
+
+  slice sbody = body.begin_parse();
 
   var full = begin_cell()
     .store_uint(0x6, 4)                         ;; 4 for flags
@@ -86,20 +90,23 @@ int __test_wrongseqno() {
       sbody   ;; msg_body
   ]);
 
-cell data = begin_cell()             ;; initial data of contract
-      .store_slice(ad)               ;; owner's address
+  cell data = begin_cell()             ;; initial data of contract
+      .store_slice(ad)               ;; manager's address
       .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(2, 32)              ;; seqno
+      .store_slice(ad)                ;; fund address
+      .store_uint(40, 8)              ;; percentage for fund
+      .store_dict(new_dict())          ;; dictionary
+      .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
       .end_cell();
-
 
   set_data(data);
 
   var (int exit_code, int gas_usado1, return_values) = invoke_method_full(recv_internal, pila);
  
   exit_code~dump();
-  throw_if(100, exit_code != 5004);
+  throw_if(100, exit_code != 504);
 
   return gas_usado1;
 }
@@ -109,13 +116,17 @@ int __test_wrongsignature() {
 
   slice ad = my_address();
 
-  var body = begin_cell()
-    .store_uint(0, 256) ;; signature part 1
-    .store_uint(0, 256) ;; signature part 2
+  var body2 = begin_cell()
     .store_uint(1, 32) ;; seqno
     .store_uint(1000, 32) ;; op  
     .store_slice(my_address())
-  .end_cell();
+    .end_cell();
+
+  var body = begin_cell()
+    .store_uint(0, 256) ;; signature part 1
+    .store_uint(0, 256) ;; signature part 2
+    .store_ref(body2)
+    .end_cell();
   var sbody = body.begin_parse();
 
   var full = begin_cell()
@@ -142,10 +153,14 @@ int __test_wrongsignature() {
   ]);
 
 cell data = begin_cell()             ;; initial data of contract
-      .store_slice(ad)               ;; owner's address
+      .store_slice(ad)               ;; manager's address
       .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(1, 32)              ;; seqno
-      .store_dict(new_dict())          ;; dictionary
+      .store_slice(ad)                ;; fund address
+      .store_uint(40, 8)              ;; percentage for fund
+      .store_dict(new_dict())          ;; dictionary selling ads
+      .store_dict(new_dict())          ;; dictionary buying ads
+      .store_dict(new_dict())          ;; dictionary payments_buying_ads
       .end_cell();
 
 
@@ -155,7 +170,7 @@ cell data = begin_cell()             ;; initial data of contract
  
   exit_code~dump();
 
-  throw_if(101, exit_code != 5000);
+  throw_if(101, exit_code != 500);
 
 
   return gas_usado1;

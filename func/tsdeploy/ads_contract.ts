@@ -8,7 +8,9 @@ import {
 } from "ton-core";
 
 import {
-  keyPair,
+  KeyPair,
+  keyPairFromSeed,
+  mnemonicToPrivateKey,
   sign
 } from "ton-crypto";
 
@@ -40,22 +42,24 @@ export default class AdsContract implements Contract {
     });
   }
 
-  async sendAddAd(provider: ContractProvider, keypair: KeyPair, seqno: integer, via: Sender) {
+  async sendAdd(
+    provider: ContractProvider, keypair: KeyPair, seqno: bigint, coins: number, via: Sender
+  ) {
     const bodyToSign = beginCell()
       .storeUint(seqno, 32)
       .storeUint(1000, 32)
-      .endCell
+      .endCell();
 
     const hash = bodyToSign.hash();
   
-    const signature = sign(hash, keypair.secret_key);
+    const signature = sign(hash, keypair.secretKey);
 
     const messageBody = beginCell()
-    .storeUint(signature, 512) 
+    .storeBuffer(signature) 
     .storeSlice(bodyToSign.beginParse())
     .endCell();
     await provider.internal(via, {
-      value: "0.002",
+      value: coins.toString(),  // Needs at least 0.005 because checks signature, with 0.002 produced error -14, out of gas
       body: messageBody
     });
   }
