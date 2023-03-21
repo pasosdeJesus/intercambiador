@@ -28,7 +28,7 @@ async function main() {
   const adsManagerAddress= await adsContract.getManagerAddress();
   console.log("manager_address:", adsManagerAddress.toString());
   const adsPublicKey= await adsContract.getPublicKey();
-  console.log("public_key:", adsPublicKey.toString());
+  console.log("Manager public_key:", adsPublicKey.toString());
 
   //const sellingAdAddresses = await adsContract.getSellingAdAddresses();
   //console.log("sellingAdAddresses:", sellingAdAddresses.toString());

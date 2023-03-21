@@ -2,8 +2,7 @@
 
 ## Requirements
 
-This is an implementantion of a P2P market to buy or sell TON in the colombian
-currency.
+This is an implementantion of a P2P market to buy or sell TON with the colombian currency.
 
 You can see requirements, viability analysys and roadmap at:
 <https://docs.google.com/document/d/1JtmHp5SPsHglGwQJYlQSabMryCY6QzM-07OdDsJWrYw/edit?usp=sharing>
@@ -34,7 +33,7 @@ Directories:
 * func: Smart contract to manage list of ads and their coins and its tests
 * backend-smartcont: Scripts to deploy the smart contract and to use it
 * backend-auth: In Go manages authentication with Ton Connect 2.0
-* backend: In Ruby on Rails manages database, it uses backend-ts
+* backend: In Ruby on Rails manages database
 * frontend: It uses backend and backend-auth
 
 

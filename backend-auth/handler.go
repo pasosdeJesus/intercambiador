@@ -104,20 +104,23 @@ func (h *handler) ProofHandler(c echo.Context) error {
 		return c.JSON(HttpResErrorWithLog("proof verification failed", http.StatusBadRequest, log))
 	}
 
+  log.Info("Construye jwt con tp.Address")
+	log.Info(tp.Address)
+	vexpires := time.Now().Add(time.Hour).Unix()
 	claims := &jwtCustomClaims{
 		tp.Address,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour).Unix(),
+			ExpiresAt: vexpires,
 		},
 	}
+  log.Info("ExpiresAt")
+	log.Info(vexpires)
+  log.Info("secret es")
+  log.Info(config.Proof.Hs256Secret)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-  secret := `env:"HS256_SECRET,required"`
-  log.Info("secret es")
-  log.Info(config.Proof.Hs256Secret)
-  secret = "secret"
-	t, err := token.SignedString([]byte(secret))
+	t, err := token.SignedString([]byte(config.Proof.Hs256Secret))
 	
 	if err != nil {
 		return err
@@ -137,6 +140,8 @@ func (h *handler) PayloadHandler(c echo.Context) error {
 		c.JSON(HttpResErrorWithLog(err.Error(), http.StatusBadRequest, log))
 	}
 	endTime := time.Now().Add(time.Duration(config.Proof.PayloadLifeTimeSec) * time.Second)
+  log.Info("time.Now() es ")
+  log.Info(time.Now())
 	sign := base64.RawURLEncoding.EncodeToString(ed25519.Sign(h.priv, []byte(nonce)))
 	h.mux.Lock()
 	h.payload[nonce] = datatype.Payload{

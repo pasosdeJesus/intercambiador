@@ -28,8 +28,7 @@ and then run:
 yarn deploy
 ```
 
-Put the address generated in ../.env in variable `ADSCONTRACT_ADDRESS`
-
+Put the address generated in ../.env in the variable `ADSCONTRACT_ADDRESS`
 
 
 ## Tests
