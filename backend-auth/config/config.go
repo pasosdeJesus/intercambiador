@@ -19,7 +19,7 @@ var Tonapi = struct {
 var Proof = struct {
 	PayloadLifeTimeSec int64  `env:"TONPROOF_PAYLOAD_LIFETIME_SEC" envDefault:"300"`
 	ProofLifeTimeSec   int64  `env:"TONPROOF_PROOF_LIFETIME_SEC" envDefault:"300"`
-	ExampleDomain      string `env:"TONPROOF_EXAMPLE_DOMAIN" envDefault:"intercambiador.pasosdejesus.org"` // *Jesús
+	ExampleDomain      string `env:"TONPROOF_EXAMPLE_DOMAIN" envDefault:"intercambiador.pasosdeJesus.org"`
 	Hs256Secret        string `env:"HS256_SECRET,required"`
 }{}
 

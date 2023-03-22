@@ -2,7 +2,8 @@
 
 ## Requirements
 
-This is an implementantion of a P2P market to buy or sell TON with the colombian currency.
+This is an implementantion of a P2P market to buy or sell TON with the 
+colombian currency.
 
 You can see requirements, viability analysys and roadmap at:
 <https://docs.google.com/document/d/1JtmHp5SPsHglGwQJYlQSabMryCY6QzM-07OdDsJWrYw/edit?usp=sharing>
@@ -12,10 +13,10 @@ You can see requirements, viability analysys and roadmap at:
 
 You can see a very crude demo at <https://intercambiador.pasosdeJesus.org>,
 by using TonKeeper it just works with Ton-Connect 2.0 and uses the 
-authentication backend and after the database backend to query the ads in 
-the database --both backends are coordinated for authentication with JSON 
-Web Tokens and a common secret used to encrypt and decrypt the address of 
-the wallet that connects.
+authentication backend to login and after the database backend to query 
+the ads in the database --both backends are coordinated for authentication 
+with JSON Web Tokens and a common secret used to encrypt and decrypt the 
+address of the wallet that connects.
 
 Neither the frontend nor the backends still interact with the smart contract,
 although an advanced version of the smart contract is already deployed in 
@@ -46,9 +47,11 @@ You can start it by `cp .env.plantilla .env` and fill with your values.
 
 ### Prepare and deploy the smart contract
 
-In directory func, improve and add tests, ensuring that they run with make.
-After in directory tsdeploy deploy to chain the smartcontract configured
-with the environment variables.
+In directory `func`, improve and add tests, ensuring that they run with 
+`make` (check instructions in `func/README.md`).
+After in directory `backend-smartcont` deploy to chain the smartcontract 
+configured with the environment variables and test it (check instrucions
+in `backed-smartcont/README.md`).
 
 ### Run the backends and the frontend
 
@@ -57,16 +60,19 @@ It is done with the script `bin/run.sh` that generates a random secret
 the authentication backend and the database backend and starts both
 backends and the frontend in development mode.
 
-To run these 3 processes it is required to install `foreman` that uses the file
-`Procfile`.
+To run these 3 processes yo need to install globally the gem `foreman` 
+(on adJ/OpenBSD it would be with `doas gem install foreman`).
+`foreman` should be run with the configuration file `Procfile`.
 
-The file `Procfile` specifies how this is done:
-  * The backend in ruby runs in one port (e.g 3442 unencrypted and with 
-    encrypted with nginx proxy for example in 3443).
+The file `Procfile` specifies how to start each process:
+  * The backend in ruby runs in one port (e.g 3442 unencrypted and then
+    encrypted with an nginx proxy for example in 3443).  You can
+    see specific instructions in `backend/README.md`
   * The backend in go runs in another port (e.g 8081 unencrypted and encrypted
-    with nginx proxy for example in 4443).
+    with an nginx proxy for example in 4443).  Check specific instructions
+    in `backend-auth/README.md`
   * The development server of the frontend runs unencrypted in other
-    port 5173, and encrypted with an nginx proyx in another port e.g 443.
-
+    port (e.g unencrypted in 5173 and encrypted with an nginx proyx 
+    in another port e.g 443).  Check instruciones in `frontend/README.md`
 
 

@@ -51,3 +51,21 @@ json
 
 # Ton Proof JS verification
 You can find an example of the ton_proof verification in JavaScript [here](https://gist.github.com/TrueCarry/cac00bfae051f7028085aa018c2a05c6).
+
+
+# Compilation
+
+You can follow the instructions of `Dockerfile`.  On adJ/OpenBSD they would be:
+
+        doas pkg_add go
+        go mod download all
+        go build -o tonproof github.com/tonkeeper/tonproof
+        
+Tha last two steps are also run with:
+
+        make
+
+# Running
+
+Run with
+        HS256_SECRET=x TONAPI_TOKEN="your_tonapi_token" ./tonproof

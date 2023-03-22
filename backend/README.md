@@ -10,9 +10,9 @@ This backend manages the database for Intercambiador COP - TON.
 ## Procedure to run backend in development mode
 
 Install PostgreSQL and from its user in the operating system 
-(e.g. `_postgresql` in adJ/OpenBSD) create a PostgreSQL superuser that will
-create and operate the database,
-for example from adJ/OpenBSD:
+(e.g. `_postgresql` in adJ/OpenBSD) create a PostgreSQL superuser 
+(let's say `copton`) that will create and operate the database.
+From adJ/OpenBSD it would be:
 
        $ createuser -Upostgres -h /var/www/var/run/postgresql -s copton
        $ psql -Upostgres -h /var/www/var/run/postgresql/
@@ -26,6 +26,7 @@ From the account that you will run the backend create a file `~/.pgpass` with
 the password, for easier usage:
 
       echo "*:*:*:copton:nuevaclave" >> ~/.pgpass
+      chmod 0600 ~/.pgpass
 
 And create the development database (e.g `copton_des`) with:
 
@@ -37,13 +38,14 @@ From the directoy of the backend install gems with:
 
 Edith the file `../.env` and change the variable BD_CLAVE to set the
 password for the postgresql user, if as username you use something 
-differente to copton set it in BD_USUARIO, and if the database you
-created is diferente to copton_des set it in BD_DES.
+different to `copton` set it in `BD_USUARIO`, and if the database you
+created is differnte to `copton_des` set it in `BD_DES`.
 
-Make a link to `../env` with
+Make a link to `../.env` with
       ln -s ../.env .
-And install globally the gem dotenv, on adJ/OpenBSD it would be
-`doas gem install dotenv`
+
+And install globally the gems dotenv and foreman, on adJ/OpenBSD it would be
+`doas gem install dotenv foreman`
 
 Test trying to start an interactive session with:
         HS256_SECRET=x bin/rails dbconsole
@@ -52,6 +54,8 @@ Once it works exit and recreate database with its sctructure and
 initial data with:
         HS256_SECRET=x bin/rails db:drop db:create db:setup db:migrate db:seed msip:indices
 
+And test that it runs
         HS256_SECRET=x R=f bin/corre 
 
+The secret is better chosen as `../bin/run.sh`  does.
 

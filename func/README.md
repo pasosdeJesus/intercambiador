@@ -3,7 +3,7 @@
 The contract `func/ads_contract.fc` will manage the list of ads to sell or 
 buy TON in the P2P market of Intercambiador COP - TON
 
-To test you need ton tools and toncli 0.0.43, their installation in 
+To test you need `ton` tools and `toncli` 0.0.43. Their installation in 
 OpenBSD/adJ is described at
 <https://medium.com/@vladimirtmara/developing-and-testing-a-simple-smart-contract-with-toncli-de96ad0a6f5c>
 
@@ -21,8 +21,9 @@ What follows are the specific requeriments for this contract.
 
 This contract can perform operations that must be signed by the manager[^fn1].
 
-[^fn1] How I handled to produce signatures to test in FunC is explained in 
-  my comment at: <https://github.com/ton-society/ton-footsteps/issues/129>
+[^fn1] How we handled to produce signatures to test in FunC is explained in 
+  a comment we made at: 
+  <https://github.com/ton-society/ton-footsteps/issues/129>
 
 
 We propose the following operations:

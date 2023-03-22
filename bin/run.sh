@@ -14,5 +14,5 @@ if (test ! -f .env) then {
 export HS256_SECRET=`od -vAn -N32 -ta < /dev/urandom | tr -d ' ' | tr -d '\n'`
 echo "HS256_SECRET: ${HS256_SECRET}"
 
-foreman start -f Procfile-sinf
+foreman start -f Procfile
 

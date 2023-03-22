@@ -118,7 +118,7 @@ func CheckProof(ctx context.Context, address, net string, tonProofReq *datatype.
 		return false, fmt.Errorf(msgErr)
 	}
 
-	if tonProofReq.Domain.Value != config.Proof.ExampleDomain {
+	if tonProofReq.Domain.Value != strings.ToLower(config.Proof.ExampleDomain) {
 		msgErr := fmt.Sprintf("wrong domain: %v != %v", tonProofReq.Domain, config.Proof.ExampleDomain)
 		log.Error(msgErr)
 		return false, fmt.Errorf(msgErr)

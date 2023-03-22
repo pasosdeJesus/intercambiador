@@ -25,3 +25,5 @@ node_modules
 backend-auth/tonproof
 
 ref
+frontend/dist/assets
+frontend/dist/vite.svg

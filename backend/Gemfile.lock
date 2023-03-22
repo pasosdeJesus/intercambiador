@@ -1,6 +1,6 @@
 GIT
   remote: https://gitlab.com/pasosdeJesus/msip.git
-  revision: 361e4a5b5130a4042c1f666a062d7c2fe21aec9d
+  revision: e74d101e339e82e6ea3c02064e482a3c8a1a60ed
   specs:
     msip (2.2.0.beta1)
       cancancan (~> 3)
@@ -328,4 +328,4 @@ RUBY VERSION
    ruby 3.2.0p0
 
 BUNDLED WITH
-   2.4.8
+   2.4.9

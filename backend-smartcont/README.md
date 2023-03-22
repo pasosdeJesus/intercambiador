@@ -1,4 +1,4 @@
-# Scripts to deploy smart contract and to use it from the backend
+# Scripts to deploy the smart contract and to use it from the backend
 
 To prepare run
 ```
