@@ -93,6 +93,7 @@ class TonProofDemoApiService {
     return response as {};
   }
 
+
   reset() {
     console.log('** TonProofDemoApi reset');
     this.accessToken = null;

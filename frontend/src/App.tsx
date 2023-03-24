@@ -4,6 +4,7 @@ import { AuthButton } from './components/AuthButton/AuthButton';
 import { connector } from './connector';
 import { TonProofDemo } from './components/TonProofDemo/TonProofDemo'; 
 import { AdsList } from "./components/AdsList";
+import { AddAd } from "./components/AddAd";
 //import { useQuery } from "react-query";
 //import axios from "axios";
 
@@ -26,8 +27,11 @@ export default function App() {
         </header>
         <main>
           <AdsList />
-          <TonProofDemo />
+          <AddAd />
         </main>
+        <footer>
+          <TonProofDemo />
+        </footer>
       </div>
   );
 }

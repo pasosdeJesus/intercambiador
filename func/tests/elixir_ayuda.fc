@@ -102,7 +102,7 @@ doas pkg_add rust
 iex
 Mix.install [:ton]
 import Ton
-use Bitwise
+import Bitwise
 
 
 bs=Ton.Bitstring.new  (1023 bits es como un slice builder)
@@ -372,7 +372,10 @@ int __test_add_ad_somecoins() {
   exit_code~dump();
   throw_if(101, exit_code != 0);
 
-  var ds = get_data().begin_parse();
+  cell data = get_data();
+  cell data2 = data;
+
+  var ds = data.begin_parse();
   throw_unless(102, equal_slices(ds~load_msg_addr(), myaddress));
   throw_unless(103, ds~load_uint(256) == 33451796392292203403440659262546624803323361398262915766836839499908567744559);
   int lseqno = ds~load_uint(32);
@@ -380,15 +383,15 @@ int __test_add_ad_somecoins() {
   throw_unless(104, lseqno == 2);
   throw_unless(105, equal_slices(ds~load_msg_addr(), myaddress));
   throw_unless(106, ds~load_uint(8) == 40);
-  var sa = ds~load_dict();
+  var s_ads = ds~load_dict();
   var ba = ds~load_dict();
   var pba = ds~load_dict();
 
-  throw_if(106, dict_empty?(sa));
+  throw_if(106, dict_empty?(s_ads));
   throw_unless(107, dict_empty?(ba));
   throw_unless(107, dict_empty?(pba));
 
-  (slice sd, int success) = sa.dict_get?(267, myaddress);
+  (slice sd, int success) = s_ads.dict_get?(267, myaddress);
   throw_unless(108, success == -1);
 
   int rec = sd~load_coins();
@@ -433,7 +436,66 @@ int __test_add_ad_somecoins() {
   rcoins~dump();
   throw_unless(118, rcoins == 168000000);
 
-  return gas_usado1;
+  ~strdump("Checking that method to iterate dictionaries doesn't destroy them");
+  cell copia_sa = s_ads;
+  int num = 0;
+  do {
+    (slice address, slice sd, int success) = copia_sa~dict::delete_get_min(267);
+    if (success) {
+      num = num + 1;
+    }
+  } until (~ success);
+
+  throw_unless(199, num == 1);
+
+  copia_sa = s_ads;
+  int num = 0;
+  do {
+    (slice address, slice sd, int success) = copia_sa~dict::delete_get_min(267);
+    if (success) {
+      num = num + 1;
+    }
+  } until (~ success);
+
+  throw_unless(200, num == 1);
+
+  ~strdump("Checking get_amount_selling_ads first time");
+  set_data(data2);
+
+  tuple pila = unsafe_tuple([]);
+  var (exit_code, gas_usado2, return_values) = invoke_method_full(get_amount_selling_ads, pila);
+
+  exit_code~dump();
+  throw_if(103, exit_code != 0);
+
+  throw_unless(104, return_values.at(0) == 1);
+
+  ~strdump("Checking get_amount_selling_ads second time (it didn't destroy state)");
+  cell data3 = get_data();
+  set_data(data3);
+
+  tuple pila = unsafe_tuple([]);
+  var (exit_code, gas_usado3, return_values) = invoke_method_full(get_amount_selling_ads, pila);
+
+  exit_code~dump();
+  throw_if(123, exit_code != 0);
+
+  throw_unless(124, return_values.at(0) == 1);
+
+
+  cell data4 = get_data();
+  set_data(data4);
+
+  tuple pila = unsafe_tuple([0]);
+  var (exit_code, gas_usado2, return_values) = invoke_method_full(get_nth_selling_ad, pila);
+
+  exit_code~dump();
+  throw_if(105, exit_code != 0);
+
+  return_values~dump();
+  throw_unless(106, return_values.at(0) == 10000000000);
+
+  return gas_usado1 + gas_usado2 + gas_usado3;
 }
 
 
@@ -525,14 +587,163 @@ int __test_release_coins() {
   exit_code~dump();
   throw_if(101, exit_code != 0);
 
+  cell data = get_data();
 
-  {-tuple pila = unsafe_tuple([])
-  var (int exit_code, int gas_usado2, return_values) = invoke_method_full(get_selling_ad_addresses, pila);
+  ~strdump("Analizando");
+  var ds2 = get_data().begin_parse();
+  slice manager_address2 = ds2~load_msg_addr();
+  throw_unless(104, equal_slices(manager_address2, myaddress));
+  var public_key2 = ds2~load_uint(256);
+  public_key2~dump();
+  var gseqno2 = ds2~load_uint(32);
+  gseqno2~dump();
+  throw_unless(105, gseqno2 == 3);
+  var fund_address2 = ds2~load_msg_addr();
+  throw_unless(105, equal_slices(fund_address2, myaddress));
+  var fund_percentage2 = ds2~load_uint(8);
+  fund_percentage2~dump();
+  throw_unless(105, fund_percentage2 == 40);
+  var selling_ads2 = ds2~load_dict();
+  selling_ads2~dump();
+  throw_unless(106, dict_empty?(selling_ads2));
+  var buying_ads2 = ds2~load_dict();
+  buying_ads2~dump();
+  throw_unless(106, dict_empty?(buying_ads2));
+  var payments_buying_ads2 = ds2~load_dict();
+  payments_buying_ads2~dump();
+  throw_unless(106, dict_empty?(payments_buying_ads2));
+
+  set_data(data);
+
+  pila = unsafe_tuple([]);
+  var (exit_code, gas_usado2, return_values) = invoke_method_full(get_amount_selling_ads, pila);
 
   exit_code~dump();
-  throw_if(102, exit_code != 0);
+  throw_if(107, exit_code != 0);
 
-  return_values~dump();-}
+  throw_unless(108, return_values.at(0) == 0);
+
+  return gas_usado1;
+}
+
+int __test_end() {
+
+  slice myaddress = my_address();
+
+  cell body_to_sign = begin_cell()
+    .store_uint(2, 32)    ;; seqno
+    .store_uint(3000, 32)  ;; op 32 bits , end of operation
+    .end_cell();
+
+  int tmphash = cell_hash(body_to_sign);
+  tmphash~dump();
+  throw_if(100, tmphash != 75448293990567837243307220766573694089363560397841802024508960039381536596275);
+
+  {- 
+> keypair = Ton.mnemonic_to_keypair("rail sound peasant garment bounce trigger true abuse arctic gravity ribbon ocean absurd okay blue remove neck cash reflect sleep hen portion gossip arrow")
+> hn = 
+> h = :binary.encode_unsigned(hn)
+> f = Ton.Utils.sign(h, keypair.secret_key)
+> b = :binary.decode_unsigned(f)
+# Da firma de 512 bits
+> b >>> 256
+# Da primeros 32 bytes
+> b &&& 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+# Da segundos 32 bytes
+   -}
+
+  cell body = begin_cell()
+    .store_uint(53250339312731016582424983432383139781902369449947917109745126181038964724008, 256) ;; signature part 1
+    .store_uint(22882713526318321004032172459050928779909847484630851180454943814167472506883, 256) ;; signature part 2
+    .store_ref(body_to_sign) 
+  .end_cell();
+  slice sbody = body.begin_parse();
+
+  cell full = begin_cell()
+    .store_uint(0x6, 4)            ;; 4 for flags
+    .store_slice(myaddress)        ;; 2..267 sender_address for addr_none would be 2 bits 00 --normally will be replaced by sender address
+    .store_slice(myaddress)        ;; 2..267  0043800efd...73010  // destination address
+    .store_coins(200000000)        ;; 0.2TON
+    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 ) ;; extra-currencies (1), ihr-fee (4 for empty VarUInteger 16), fwd-fee (4), cur_lt (64), now (32) init (1)
+    .store_uint(1, 1)              ;; Inplace
+    .store_ref(body)
+  .end_cell();
+  slice sfull = full.begin_parse();
+  ;;sfull~dump();
+
+  tuple pila = unsafe_tuple([
+      20000000, ;; coins  20.000.000 is 0.02  1 TON is 1.000'000.000 nanotons
+      10,  ;; msg_value
+      full, ;; in_msg_full
+      sbody   ;; msg_body
+  ]);
+
+  cell selldict = new_dict();
+  cell datad = begin_cell()
+    .store_coins(10000000000)  ;; 10TON
+    .store_uint(now() + 10000, 64) ;; Valid until
+    .end_cell();
+  slice sdatad = datad.begin_parse();
+  ;;~strdump("sdatad:");
+  ;;slice base8sdatad = slice_to_hexstr(sdatad);
+  ;;base8sdatad~strdump();
+
+  var success = selldict~dict_add?(267, myaddress, sdatad);
+  throw_unless(800, success);
+
+  cell data = begin_cell()             ;; initial data of contract
+      .store_slice(myaddress)               ;; owner's address
+      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
+      .store_uint(2, 32)              ;; seqno
+      .store_slice(myaddress)         ;; fund address
+      .store_uint(40, 8)              ;; percentage for fund
+      .store_dict(selldict)           ;; selling ads dictionary
+      .store_dict(new_dict())         ;; buying ads dictionary
+      .store_dict(new_dict())         ;; paid for buying ad dictionary
+      .end_cell();
+
+  set_data(data);
+
+  var (int exit_code, int gas_usado1, return_values) = invoke_method_full(recv_internal, pila);
+
+  exit_code~dump();
+  throw_if(101, exit_code != 0);
+
+  cell data = get_data();
+
+  ~strdump("Analizando");
+  var ds2 = get_data().begin_parse();
+  slice manager_address2 = ds2~load_msg_addr();
+  throw_unless(104, equal_slices(manager_address2, myaddress));
+  var public_key2 = ds2~load_uint(256);
+  public_key2~dump();
+  var gseqno2 = ds2~load_uint(32);
+  gseqno2~dump();
+  throw_unless(105, gseqno2 == 3);
+  var fund_address2 = ds2~load_msg_addr();
+  throw_unless(105, equal_slices(fund_address2, myaddress));
+  var fund_percentage2 = ds2~load_uint(8);
+  fund_percentage2~dump();
+  throw_unless(105, fund_percentage2 == 40);
+  var selling_ads2 = ds2~load_dict();
+  selling_ads2~dump();
+  throw_unless(106, dict_empty?(selling_ads2));
+  var buying_ads2 = ds2~load_dict();
+  buying_ads2~dump();
+  throw_unless(106, dict_empty?(buying_ads2));
+  var payments_buying_ads2 = ds2~load_dict();
+  payments_buying_ads2~dump();
+  throw_unless(106, dict_empty?(payments_buying_ads2));
+
+  set_data(data);
+
+  pila = unsafe_tuple([]);
+  var (exit_code, gas_usado2, return_values) = invoke_method_full(get_amount_selling_ads, pila);
+
+  exit_code~dump();
+  throw_if(107, exit_code != 0);
+
+  throw_unless(108, return_values.at(0) == 0);
 
   return gas_usado1;
 }

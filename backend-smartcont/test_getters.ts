@@ -35,6 +35,9 @@ async function main() {
 
   //const sellingAd = await adsContract.getSellingAd(adsAddress);
   //console.log("sellingAdAddresses:", sellingAd.toString());
+  
+  const amount:BigInt = await adsContract.getAmountSellingAds();
+  console.log("amount:", amount);
 }
 
 main();

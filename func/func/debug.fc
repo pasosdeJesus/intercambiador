@@ -1,24 +1,36 @@
 #include "typehelpers.fc";
 
+int hexdigit_to_chr(int d) {
+  if (d < 10) {
+    return d + 48;
+  }
+  return d + 55;
+}
+
 slice slice_to_hexstr(slice s) {
-  tuple dhex = unsafe_tuple(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "F"]);
   int ls = s.slice_bits();
   if (ls > 8) {
     slice ant = s~load_bits(ls - 8);
     int u = s~load_uint(8);
     slice c1 = slice_to_hexstr(ant);
+    int d1 = u / 16;
+    int sd1 = hexdigit_to_chr(d1);
+    int d2 = u % 16;
+    int sd2 = hexdigit_to_chr(d2);
     cell r = begin_cell()
       .store_slice(c1)
-      .store_slice(dhex.at(u / 16))
-      .store_slice(dhex.at(u % 16))
+      .store_uint(sd1, 8)
+      .store_uint(sd2, 8)
       .end_cell();
-    return r.begin_parse();
+    slice ret = r.begin_parse();
+    return ret;
   }
   int u = s~load_uint(ls);
   cell r = begin_cell()
-    .store_slice(dhex.at(u / 16))
-    .store_slice(dhex.at(u % 16))
+    .store_uint(hexdigit_to_chr(u / 16), 8)
+    .store_uint(hexdigit_to_chr(u % 16), 8)
     .end_cell();
-  return r.begin_parse();
+  slice ret = r.begin_parse();
+  return ret;
 }
 

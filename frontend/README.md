@@ -1,4 +1,8 @@
 
+This is based on a mixture between 
+<https://github.com/ton-connect/demo-dapp-with-backend> and 
+<https://github.com/ton-community/twa-template>
+
 Prepare with
 
        yarn

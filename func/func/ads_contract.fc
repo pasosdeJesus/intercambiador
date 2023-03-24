@@ -1,19 +1,19 @@
 {-
   ISC License
 
-    Copyright (c) 2020, Vladimir Támara Patiño vtamara@pasosdeJesus.org
+  Copyright (c) 2020, Vladimir Támara Patiño vtamara@pasosdeJesus.org
 
-    Permission to use, copy, modify, and/or distribute this software for any 
-    purpose with or without fee is hereby granted, provided that the above 
-    copyright notice and this permission notice appear in all copies.
+  Permission to use, copy, modify, and/or distribute this software for any 
+  purpose with or without fee is hereby granted, provided that the above 
+  copyright notice and this permission notice appear in all copies.
 
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
-    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
-    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
-    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
-    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
-    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES 
+  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
+  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
+  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
+  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   ---
 
@@ -35,7 +35,8 @@ key_len) "DICTGET" "NULLSWAPIFNOT";
 
 (cell, int) dict_add?(cell dict, int key_len, slice key, slice value) asm(value key dict key_len) "DICTADD";
 
-(slice, slice, int) dict_get_next?(cell dict, int key_len, slice pivot) asm(pivot dict key_len -> 1 0 2) "DICTGETNEXT" "NULLSWAPIFNOT2";
+
+;; This one didn't work: (slice, slice, int) dict_get_next?(cell dict, int key_len, slice pivot) asm(pivot dict key_len -> 1 0 2) "DICTGETNEXT" "NULLSWAPIFNOT2";
 
 (cell, int) dict_delete?(cell dict, int key_len, slice key) asm(key dict key_len) "DICTDEL";
 
@@ -85,6 +86,32 @@ global cell payments_buying_ads;
   .end_cell());
 }
 
+{- 
+() dump_data () impure {
+  ~strdump("OJO dump_data");
+  ~strdump("manager_address:");
+  slice base8ma = slice_to_hexstr(manager_address);
+  base8ma~strdump();
+  ~strdump("public_key:");
+  public_key~dump();
+  ~strdump("seqno:");
+  gseqno~dump();
+  ~strdump("fund_address:");
+  slice base8fa = slice_to_hexstr(fund_address);
+  base8fa~strdump();
+  ~strdump("fund_percentage:");
+  fund_percentage~dump();
+  ~strdump("selling_ads bits:");
+  (int celdas, int bits, int refs) = compute_data_size(selling_ads, 5000);
+  bits~dump();
+  ~strdump("buying_ads bits:");
+  (int celdas, int bits, int refs) = compute_data_size(buying_ads, 5000);
+  bits~dump();
+  ~strdump("payments_buying_ads bits:");
+  (int celdas, int bits, int refs) = compute_data_size(payments_buying_ads, 5000);
+  bits~dump();
+}
+-}
 
 
 {- AUXILIARY FUNCTIONS -}
@@ -315,35 +342,36 @@ global cell payments_buying_ads;
 
     int sellers_coins = 0;
     int numop = 0;
-    cell ckey = begin_cell().end_cell();
-    slice skey = ckey.begin_parse();
-    do {
-      (skey, slice sd, int f) = selling_ads.dict_get_next?(267, skey);
-      int adcoins = sd~load_coins();
-      sellers_coins = sellers_coins + adcoins;
-      if (f) {
-        numop = numop + 1;
-      }
-    } until (~ f);
 
-    slice skey = ckey.begin_parse();
-    do {
-      (skey, slice sd, int f) = buying_ads.dict_get_next?(267, skey);
-      if (f) {
-        numop = numop + 1;
-      }
-    } until (~ f);
+    cell copy_sa = selling_ads;
 
-    slice skey = ckey.begin_parse();
     do {
-      (skey, slice sd, int f) = payments_buying_ads.dict_get_next?(267, skey);
-      slice payeer = sd~load_msg_addr();
-      int pcoins = sd~load_coins();
-      sellers_coins = sellers_coins + pcoins;
-      if (f) {
+      (slice address, slice sd, int success) = copy_sa~dict::delete_get_min(267);
+      if (success) {
+        int adcoins = sd~load_coins();
+        sellers_coins = sellers_coins + adcoins;
         numop = numop + 1;
       }
-    } until (~ f);
+    } until (~ success);
+
+    cell copy_ba = buying_ads;
+    do {
+      (slice address, slice sd, int success) = copy_ba~dict::delete_get_min(267);
+      if (success) {
+        numop = numop + 1;
+      }
+    } until (~ success);
+
+    cell copy_pba = payments_buying_ads;
+    do {
+      (slice address, slice sd, int success) = copy_pba~dict::delete_get_min(267);
+      if (success) {
+        slice payeer = sd~load_msg_addr();
+        int pcoins = sd~load_coins();
+        sellers_coins = sellers_coins + pcoins;
+        numop = numop + 1;
+      }
+    } until (~ success);
 
 
     [int balance, cell extracurr] = get_balance();
@@ -425,16 +453,62 @@ int seqno() method_id {
 tuple get_selling_ad_addresses() method_id {
   load_data();
   tuple ret = unsafe_tuple([]);
-  cell ckey = begin_cell().end_cell();
-  slice skey = ckey.begin_parse();
+
+  cell copy_sa = selling_ads;
+
   do {
-    (skey, slice sd, int f) = selling_ads.dict_get_next?(267, skey);
-    if (f) {
-      ret~tpush(skey);
+    (slice address, slice sd, int success) = copy_sa~dict::delete_get_min(267);
+    if (success) {
+      ret~tpush(address);
     }
-  } until (~ f);
+  } until (~ success);
 
   return ret;
+}
+
+;; Returns amount of selling ads
+int get_amount_selling_ads() method_id {
+  load_data();
+
+  cell copy_sa = selling_ads;
+
+  int amount = 0;
+  do {
+    (slice address, slice sd, int success) = copy_sa~dict::delete_get_min(267);
+    if (success) {
+      amount = amount + 1;
+    }
+  } until (~ success);
+
+  return amount;
+}
+
+;; Returns the n-th selling ad
+;; n must be between 0 and get_amount_selling_ads() - 1
+;; Returns (coins, valid_until) or if n is out of boundaries returns (-1, 0)
+(int, int) get_nth_selling_ad(int n) method_id {
+  load_data();
+
+  cell copy_sa = selling_ads;
+
+  if (n < 0) {
+    return (-1, 0);
+  }
+  int i = 0;
+  do {
+    (slice address, slice sd, int success) = copy_sa~dict::delete_get_min(267);
+    if (success) {
+      if (n == i) {
+        int adcoins = sd~load_coins();
+        int validuntil = sd~load_uint(64);
+
+        return (adcoins, validuntil);
+      }
+      i = i + 1;
+    }
+  } until (~ success);
+
+  return (-1, 0);
 }
 
 

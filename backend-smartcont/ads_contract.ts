@@ -4,7 +4,8 @@
 
 import {
   Address, beginCell, Cell, contractAddress,
-  Contract, ContractProvider, Dictionary, Sender
+  Contract, ContractProvider, Dictionary, Sender,
+  TupleItem, TupleItemInt
 } from "ton-core";
 
 import {
@@ -75,6 +76,29 @@ export default class AdsContract implements Contract {
     });
   }
 
+  async sendEndOfOperation(
+    provider: ContractProvider, keypair: KeyPair, seqno: bigint, via: Sender
+  ) {
+    const bodyToSign = beginCell()
+      .storeUint(seqno, 32)
+      .storeUint(3000, 32)
+      .endCell();
+
+    const hash = bodyToSign.hash();
+
+    const signature = sign(hash, keypair.secretKey);
+
+    const messageBody = beginCell()
+    .storeBuffer(signature)
+    .storeRef(bodyToSign)
+    .endCell();
+    await provider.internal(via, {
+      value: "0.01",  // With 0.005 it produced error -14, out of gas
+      body: messageBody
+    });
+  }
+
+
   async getManagerAddress(provider: ContractProvider) {
     const { stack } = await provider.get("get_manager_address", []);
     return stack.readAddress();
@@ -108,5 +132,20 @@ export default class AdsContract implements Contract {
     const { stack } = await provider.get("get_ads", []);
     return stack.readCellOpt();
   } */
+
+  async getAmountSellingAds(provider: ContractProvider) {
+    const { stack } = await provider.get("get_amount_selling_ads", []);
+    return stack.readBigNumber();
+  }
+
+  async getNthSellingAd(provider: ContractProvider, nt: TupleItem) {
+    if (nt.hasOwnProperty("value")) {
+      //const nti = <TupleItemInt>nt;
+      //const n = nti.value;
+      const { stack } = await provider.get("get_amount_selling_ads", [nt]);
+      return stack.readTuple();
+    }
+  }
+
 
 }
