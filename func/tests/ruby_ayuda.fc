@@ -1,4 +1,6 @@
 
+#include "../func/ads_constants.fc";
+
 int __test_wrongmessage() {
 
   slice ad = my_address();
@@ -56,7 +58,7 @@ int __test_wrongseqno() {
 
   var body2 = begin_cell()
     .store_uint(1, 32) ;; seqno
-    .store_uint(1000, 32) ;; op  
+    .store_uint(OP_SELLER_CREATES_AD, 32) ;; op  
     .end_cell();
 
   var body = begin_cell()
@@ -91,11 +93,7 @@ int __test_wrongseqno() {
   ]);
 
   cell data = begin_cell()             ;; initial data of contract
-      .store_slice(ad)               ;; manager's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(2, 32)              ;; seqno
-      .store_slice(ad)                ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
@@ -106,7 +104,7 @@ int __test_wrongseqno() {
   var (int exit_code, int gas_usado1, return_values) = invoke_method_full(recv_internal, pila);
  
   exit_code~dump();
-  throw_if(100, exit_code != 504);
+  throw_if(100, exit_code != ERR_WRONG_SEQNO);
 
   return gas_usado1;
 }
@@ -118,7 +116,7 @@ int __test_wrongsignature() {
 
   var body2 = begin_cell()
     .store_uint(1, 32) ;; seqno
-    .store_uint(1000, 32) ;; op  
+    .store_uint(OP_SELLER_CREATES_AD, 32) ;; op  
     .store_slice(my_address())
     .end_cell();
 
@@ -153,11 +151,7 @@ int __test_wrongsignature() {
   ]);
 
 cell data = begin_cell()             ;; initial data of contract
-      .store_slice(ad)               ;; manager's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(1, 32)              ;; seqno
-      .store_slice(ad)                ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
       .store_dict(new_dict())          ;; dictionary selling ads
       .store_dict(new_dict())          ;; dictionary buying ads
       .store_dict(new_dict())          ;; dictionary payments_buying_ads

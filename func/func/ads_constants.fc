@@ -1,0 +1,65 @@
+{- USEFUL DEFINITIONS  -}
+
+forall X -> tuple unsafe_tuple(X x) asm "NOP";
+
+int equal_slices (slice a, slice b) asm "SDEQ";
+
+(slice, int) dict_get?(cell dict, int key_len, slice key) asm(key dict
+key_len) "DICTGET" "NULLSWAPIFNOT";
+
+(cell, int) dict_add?(cell dict, int key_len, slice key, slice value) asm(value key dict key_len) "DICTADD";
+
+;; This one didn't work: (slice, slice, int) dict_get_next?(cell dict, int key_len, slice pivot) asm(pivot dict key_len -> 1 0 2) "DICTGETNEXT" "NULLSWAPIFNOT2";
+
+(cell, int) dict_delete?(cell dict, int key_len, slice key) asm(key dict key_len) "DICTDEL";
+
+
+{- CONSTANTS -}
+
+;; We notice that the execution of adding a selling ad costs around 0.015 TON
+const AD_MIN_COINS = 5200000000;
+const AD_MAX_TIME = 864000;   ;; 10 days (10 * 24 * 60 * 60);
+
+;; Manager
+const manager_address = "EQBw2alYCpBVSZsuxBV92akZdfKqU4u8upAU6nyx-Lv6rh81"a;
+const manager_public_key = 80707734765953252277396461989487177013786725744056774214746834774813238654892;
+
+;; Fund Sierra Leone
+const fund_address = "EQBW-VzrrQgUZCKonQm3gHqDFUK42yM33k3g6zMpvvq7tcCj"a;
+const fund_percentage = 10;  ;; 10% of utilities
+
+;; Operations with selling ads
+const OP_SELLER_CREATES_AD                 = 1000;
+const OP_SELLER_RELEASES_COINS             = 1100;
+const OP_SELLER_CANCELS_AD                 = 1200;
+const OP_MANAGER_CANCELS_SELLING_AD        = 1300;
+
+;; Operations with buying ads
+const OP_BUYER_CREATES_AD                  = 2000;
+const OP_SELLER_PAYS_BUYING_AD             = 2100;
+const OP_SELLER_RELEASE_COINS_OF_BUYING_AD = 2200;
+const OP_BUYER_CANCELS_AD                  = 2300;
+const OP_MANAGER_CANCELS_BUYING_AD         = 2300;
+
+;; Administrative operations
+const OP_MANAGER_DISTRIBUTES_UTILITY        = 3000;
+const OP_MANAGER_ENDS_OPERATION             = 4000;
+
+;; Exit error codes
+const ERR_INVALID_SIGNATURE        = 500;
+const ERR_INVALID_OPERATION        = 501;
+const ERR_WRONG_MESSAGE            = 502;
+const ERR_WRONG_SEQNO              = 503;
+const ERR_INSUFFICIENT_COINS       = 504;
+const ERR_SELLER_WITHOUT_AD        = 505;
+const ERR_CANNOT_DELETE_AD         = 506;
+const ERR_OP_MUST_BE_MANAGER       = 507;
+const ERR_RELEASING_MORE           = 508;
+
+;; Seller creates a selling ad
+const ERR_CANNOT_CREATE_SELLING_AD = 1001;
+const ERR_SELLER_HAS_AD            = 1002;
+
+;; Distributing utility
+const ERR_UTILITY_BELOW_ZERO       = 3001;
+

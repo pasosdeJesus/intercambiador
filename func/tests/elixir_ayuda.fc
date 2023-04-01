@@ -1,6 +1,59 @@
 #include "../func/typehelpers.fc";
 #include "../func/debug.fc";
 
+
+
+  {- To generate signatures and add them, what I do is:
+doas pkg_add elixir
+doas pkg_add rust
+% iex
+> Mix.install [:ton]
+> import Ton
+> import Bitwise
+> keypair = Ton.mnemonic_to_keypair("rail sound peasant garment bounce trigger true abuse arctic gravity ribbon ocean absurd okay blue remove neck cash reflect sleep hen portion gossip arrow")
+> hn = 19628012290069340860609293167367498616118345354005210669087707131081901183457
+> h = :binary.encode_unsigned(hn)
+> f = Ton.Utils.sign(h, keypair.secret_key)
+> b = :binary.decode_unsigned(f)
+# Da firma de 512 bits
+> b >>> 256
+# Da primeros 32 bytes
+> b &&& 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+# Da segundos 32 bytes
+
+------
+Other interesting things:
+
+bs=Ton.Bitstring.new  (1023 bits es como un slice builder)
+bs=Ton.Bitstring.write_binary(bs, << 1::32, "1234">>)
+
+Siguiendo definición de hash de un cell de TVM es
+hash de repcell que comienza con 2 bytes que dependen del tipo y tamaño ....
+
+tn = Ton.Cell.new(:ordinary, bs)
+
+h = Ton.Cell.hash(tn) # da 32 bytes
+
+:binary.decode_unsigned(Ton.Cell.hash(tn))
+76062567842973554250617779367060955649762229441026628547894021881107430199239
+
+privkey = :binary.encode_unsigned(privkey_int)
+
+
+> :binary.decode_unsigned(keypair.public_key)
+33451796392292203403440659262546624803323361398262915766836839499908567744559 
+# 32 bytes
+
+> :binary.decode_unsigned(keypair.secret_key)
+7849232547903451475500657988064735313305969615507206331677764391966889596620100178913004793480057471153841681118697258783023157007644107404187233695514671
+# 64 bytes
+
+#  Util
+#  https://elixirforum.com/t/how-to-manipurate-bitstring-not-binary-such-as-making-a-value-concatinating-converting-into-integer/22654
+
+   -}
+
+
 int equal_slices (slice a, slice b) asm "SDEQ";
 
 ;; From https://github.com/disintar/toncli/blob/master/src/toncli/lib/test-libs/c5_parse_helpers.func
@@ -95,71 +148,15 @@ int __test_goodsignature_badop() {
     .store_slice("1234")  ;; op 32 bits (invalid)
     .end_cell();
 
-  {- In elixir with hex package ton:
+  int tmphash = cell_hash(body_to_sign);
+  ~strdump("Hash de body_to_sign");
+  tmphash~dump();
+  throw_if(100, tmphash != 76062567842973554250617779367060955649762229441026628547894021881107430199239);
 
-doas pkg_add elixir
-doas pkg_add rust
-iex
-Mix.install [:ton]
-import Ton
-import Bitwise
-
-
-bs=Ton.Bitstring.new  (1023 bits es como un slice builder)
-bs=Ton.Bitstring.write_binary(bs, << 1::32, "1234">>)
-
-Siguiendo definición de hash de un cell de TVM es
-hash de repcell que comienza con 2 bytes que dependen del tipo y tamaño ....
-
-tn = Ton.Cell.new(:ordinary, bs)
-
-h = Ton.Cell.hash(tn) # da 32 bytes
-
-:binary.decode_unsigned(Ton.Cell.hash(tn))
-76062567842973554250617779367060955649762229441026628547894021881107430199239
-
-privkey = :binary.encode_unsigned(privkey_int)
-
-
-> keypair = Ton.mnemonic_to_keypair("rail sound peasant garment bounce trigger
-true abuse arctic gravity ribbon ocean absurd okay blue remove neck cash reflect
-sleep hen portion gossip arrow")
-
-> :binary.decode_unsigned(keypair.public_key)
-33451796392292203403440659262546624803323361398262915766836839499908567744559 
-# 32 bytes
-
-> :binary.decode_unsigned(keypair.secret_key)
-7849232547903451475500657988064735313305969615507206331677764391966889596620100178913004793480057471153841681118697258783023157007644107404187233695514671
-# 64 bytes
-
-> f = Ton.Utils.sign(h, keypair.secret_key) 
-
-> b=:binary.decode_unsigned(f)
-
-# Da firma de 512 bits
-> b >>> 256
-86363322427249124616956870879939182925545766143075888967664368716527894077204
-# Da primeros 32 bytes
-
-# No requieren 0s a la izquierda al examinar con
-:binary.encode_unsigned(b >>> 256)
-<<190, 239, 232, 131, 104, 215, 52, 63, 163, 41, 69, 90, 49, 45, 35, 172, 134,
-  69, 110, 45, 82, 215, 18, 1, 57, 194, 23, 148, 205, 177, 31, 20>>
-
-> b &&& 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-# Da segundos 32 bytes
-17144406180444315820724024059434656869322345781021736120417173811110701150464
-
-#  Util
-#  https://elixirforum.com/t/how-to-manipurate-bitstring-not-binary-such-as-making-a-value-concatinating-converting-into-integer/22654
-
-
-   -}
 
   var body = begin_cell()
-    .store_uint(86363322427249124616956870879939182925545766143075888967664368716527894077204, 256) ;; signature part 1
-    .store_uint(17144406180444315820724024059434656869322345781021736120417173811110701150464, 256) ;; signature part 2
+    .store_uint(25200840620019446809759566974926850156826275583457103873313183460677510965286, 256) ;; signature part 1
+    .store_uint(77457789748311439661918980830127397825669225773014840297918072166882249621515, 256) ;; signature part 2
     .store_ref(body_to_sign) 
   .end_cell();
   var sbody = body.begin_parse();
@@ -188,11 +185,7 @@ sleep hen portion gossip arrow")
   ]);
 
   cell data = begin_cell()             ;; initial data of contract
-      .store_slice(ad)               ;; owner's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(1, 32)              ;; seqno
-      .store_slice(ad)                ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
@@ -215,53 +208,17 @@ int __test_add_ad_fewcoins() {
 
   cell body_to_sign = begin_cell()
     .store_uint(1, 32)    ;; seqno
-    .store_uint(1000, 32)  ;; op 32 bits , add ad
+    .store_uint(OP_SELLER_CREATES_AD, 32)  ;; op 32 bits , add ad
     .end_cell();
 
-  {- 
-
-> bs=Ton.Bitstring.new  (1023 bits es como un slice builder)
-> bs=Ton.Bitstring.write_binary(bs, << 1::32, 1000:32 >>)
-> tn = Ton.Cell.new(:ordinary, bs)
-> h = Ton.Cell.hash(tn) # da 32 bytes
-> :binary.decode_unsigned(h)
-
-   -}
-
-   {-
-
-> keypair = Ton.mnemonic_to_keypair("rail sound peasant garment bounce trigger true abuse arctic gravity ribbon ocean absurd okay blue remove neck cash reflect sleep hen portion gossip arrow")
-
-> :binary.decode_unsigned(keypair.public_key)
-33451796392292203403440659262546624803323361398262915766836839499908567744559 
-# 32 bytes
-
-> :binary.decode_unsigned(keypair.secret_key)
-7849232547903451475500657988064735313305969615507206331677764391966889596620100178913004793480057471153841681118697258783023157007644107404187233695514671
-# 64 bytes
-
-> f = Ton.Utils.sign(h, keypair.secret_key) 
-
-> b=:binary.decode_unsigned(f)
-
-# Da firma de 512 bits
-> b >>> 256
-95817253206089097193931663397172458887240792975504841423923031368924763547095
-# Da primeros 32 bytes
-
-> b &&& 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-# Da segundos 32 bytes
-52055047891093896122722321857518565569980897462306809874946417405718241984526
-
-#  Util
-#  https://elixirforum.com/t/how-to-manipurate-bitstring-not-binary-such-as-making-a-value-concatinating-converting-into-integer/22654
-
-
-   -}
+  int tmphash = cell_hash(body_to_sign);
+  ~strdump("Hash de body_to_sign");
+  tmphash~dump();
+  throw_if(100, tmphash != 29357836411124981285495765108012652830917040149534034395677251036887651600221);
 
   var body = begin_cell()
-    .store_uint(95817253206089097193931663397172458887240792975504841423923031368924763547095, 256) ;; signature part 1
-    .store_uint(52055047891093896122722321857518565569980897462306809874946417405718241984526, 256) ;; signature part 2
+    .store_uint(81337640637907098905805977225654971152465559727101284480981647084238576954762, 256) ;; signature part 1
+    .store_uint(65022224361929422683891631100150983158072580151415779771643245947955362773516, 256) ;; signature part 2
     .store_ref(body_to_sign) 
   .end_cell();
   var sbody = body.begin_parse();
@@ -290,11 +247,7 @@ int __test_add_ad_fewcoins() {
   ]);
 
   cell data = begin_cell()             ;; initial data of contract
-      .store_slice(ad)               ;; owner's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(1, 32)              ;; seqno
-      .store_slice(ad)                ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
@@ -305,11 +258,9 @@ int __test_add_ad_fewcoins() {
   var (int exit_code, int gas_usado1, return_values) = invoke_method_full(recv_internal, pila);
 
   exit_code~dump();
-  throw_if(101, exit_code != 1003);
+  throw_if(101, exit_code != ERR_INSUFFICIENT_COINS);
 
   var ds = get_data().begin_parse();
-  throw_unless(102, equal_slices(ds~load_msg_addr(), ad));
-  throw_unless(103, ds~load_uint(256) == 33451796392292203403440659262546624803323361398262915766836839499908567744559);
   throw_unless(104, ds~load_uint(32) == 1);
   var m = ds~load_dict();
   var e = ds~load_dict();
@@ -324,12 +275,17 @@ int __test_add_ad_somecoins() {
 
   cell body_to_sign = begin_cell()
     .store_uint(1, 32)    ;; seqno
-    .store_uint(1000, 32)  ;; op 32 bits , add ad
+    .store_uint(OP_SELLER_CREATES_AD, 32)  ;; op 32 bits , add ad
     .end_cell();
 
+  int tmphash = cell_hash(body_to_sign);
+  ~strdump("Hash de body_to_sign");
+  tmphash~dump();
+  throw_if(100, tmphash != 29357836411124981285495765108012652830917040149534034395677251036887651600221);
+
   var body = begin_cell()
-    .store_uint(95817253206089097193931663397172458887240792975504841423923031368924763547095, 256) ;; signature part 1
-    .store_uint(52055047891093896122722321857518565569980897462306809874946417405718241984526, 256) ;; signature part 2
+    .store_uint(81337640637907098905805977225654971152465559727101284480981647084238576954762, 256) ;; signature part 1
+    .store_uint(65022224361929422683891631100150983158072580151415779771643245947955362773516, 256) ;; signature part 2
     .store_ref(body_to_sign) 
   .end_cell();
   var sbody = body.begin_parse();
@@ -346,7 +302,6 @@ int __test_add_ad_somecoins() {
   var sfull = full.begin_parse();
   ;; sfull~dump();
 
-
   tuple pila = unsafe_tuple([
       20000000, ;; coins  20.000.000 is 0.02  1 TON is 1.000'000.000 nanotons
       10,  ;; msg_value
@@ -355,18 +310,13 @@ int __test_add_ad_somecoins() {
   ]);
 
   cell data = begin_cell()             ;; initial data of contract
-      .store_slice(myaddress)               ;; owner's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
-      .store_uint(1, 32)              ;; seqno
-      .store_slice(myaddress)                ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
+      .store_uint(1, 32)               ;; seqno
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
       .store_dict(new_dict())          ;; dictionary
       .end_cell();
 
   set_data(data);
-
   var (int exit_code, int gas_usado1, return_values) = invoke_method_full(recv_internal, pila);
 
   exit_code~dump();
@@ -376,13 +326,9 @@ int __test_add_ad_somecoins() {
   cell data2 = data;
 
   var ds = data.begin_parse();
-  throw_unless(102, equal_slices(ds~load_msg_addr(), myaddress));
-  throw_unless(103, ds~load_uint(256) == 33451796392292203403440659262546624803323361398262915766836839499908567744559);
   int lseqno = ds~load_uint(32);
   lseqno~dump();
   throw_unless(104, lseqno == 2);
-  throw_unless(105, equal_slices(ds~load_msg_addr(), myaddress));
-  throw_unless(106, ds~load_uint(8) == 40);
   var s_ads = ds~load_dict();
   var ba = ds~load_dict();
   var pba = ds~load_dict();
@@ -416,10 +362,12 @@ int __test_add_ad_somecoins() {
   sa~dump();
   throw_unless(113, sa == 0);
   var ra = sb0~load_msg_addr();
-  throw_unless(114, equal_slices(ra, myaddress));
+  ra~dump();
+
+  throw_unless(114, equal_slices(ra, fund_address));
   var rcoins = sb0~load_coins();
   rcoins~dump();
-  throw_unless(115, rcoins == 112000000);
+  throw_unless(115, rcoins == 28000000); ;; 10% utility for fund
 
   tuple a1 = actions.at(1);
   sb0 = a1.at(1).begin_parse();
@@ -431,10 +379,10 @@ int __test_add_ad_somecoins() {
   sa~dump();
   throw_unless(117, sa == 0);
   ra = sb0~load_msg_addr();
-  throw_unless(114, equal_slices(ra, myaddress));
+  ;;throw_unless(114, equal_slices(ra, myaddress));
   rcoins = sb0~load_coins();
   rcoins~dump();
-  throw_unless(118, rcoins == 168000000);
+  throw_unless(118, rcoins == 252000000); ;; 90% utility for manager
 
   ~strdump("Checking that method to iterate dictionaries doesn't destroy them");
   cell copia_sa = s_ads;
@@ -474,6 +422,7 @@ int __test_add_ad_somecoins() {
   cell data3 = get_data();
   set_data(data3);
 
+  dump_stack();
   tuple pila = unsafe_tuple([]);
   var (exit_code, gas_usado3, return_values) = invoke_method_full(get_amount_selling_ads, pila);
 
@@ -493,8 +442,8 @@ int __test_add_ad_somecoins() {
   throw_if(105, exit_code != 0);
 
   return_values~dump();
-  throw_unless(106, return_values.at(0) == 10000000000);
-
+  dump_stack();
+  throw_unless(106, return_values.at(1) == 10000000000);
   return gas_usado1 + gas_usado2 + gas_usado3;
 }
 
@@ -506,7 +455,7 @@ int __test_release_coins() {
 
   cell body_to_sign = begin_cell()
     .store_uint(2, 32)    ;; seqno
-    .store_uint(1100, 32)  ;; op 32 bits , release coins to buyer
+    .store_uint(OP_SELLER_RELEASES_COINS, 32)  ;; op 32 bits , release coins to buyer
     .store_uint(4,3) ;; example buyer address
     .store_uint(10,8) ;; example buyer address
     .store_uint(456,256) ;; example buyer address
@@ -517,22 +466,9 @@ int __test_release_coins() {
   tmphash~dump();
   throw_if(100, tmphash != 41910469873814935573045619605681105550490891720547882356612539347020904940347);
 
-  {- 
-> keypair = Ton.mnemonic_to_keypair("rail sound peasant garment bounce trigger true abuse arctic gravity ribbon ocean absurd okay blue remove neck cash reflect sleep hen portion gossip arrow")
-> hn = 41910469873814935573045619605681105550490891720547882356612539347020904940347
-> h = :binary.encode_unsigned(hn)
-> f = Ton.Utils.sign(h, keypair.secret_key)
-> b = :binary.decode_unsigned(f)
-# Da firma de 512 bits
-> b >>> 256
-# Da primeros 32 bytes
-> b &&& 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-# Da segundos 32 bytes
-   -}
-
   cell body = begin_cell()
-    .store_uint(18746493564662722219875016906149364700322293338652852253524997719029730376795, 256) ;; signature part 1
-    .store_uint(82701729945111986453213037551865380431702351055024665806508199474185969389069, 256) ;; signature part 2
+    .store_uint(30897984454958315119411092091039612757908613629130233167072357766534951962024, 256) ;; signature part 1
+    .store_uint(4090334718856674773384738229910813916504298618461452046933458283576013256451, 256) ;; signature part 2
     .store_ref(body_to_sign) 
   .end_cell();
   slice sbody = body.begin_parse();
@@ -570,11 +506,7 @@ int __test_release_coins() {
   throw_unless(800, success);
 
   cell data = begin_cell()             ;; initial data of contract
-      .store_slice(myaddress)               ;; owner's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(2, 32)              ;; seqno
-      .store_slice(myaddress)                ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
       .store_dict(selldict)          ;; selling ads dictionary
       .store_dict(new_dict())          ;; buying ads dictionary
       .store_dict(new_dict())          ;; paid for buying ad dictionary
@@ -591,18 +523,9 @@ int __test_release_coins() {
 
   ~strdump("Analizando");
   var ds2 = get_data().begin_parse();
-  slice manager_address2 = ds2~load_msg_addr();
-  throw_unless(104, equal_slices(manager_address2, myaddress));
-  var public_key2 = ds2~load_uint(256);
-  public_key2~dump();
   var gseqno2 = ds2~load_uint(32);
   gseqno2~dump();
   throw_unless(105, gseqno2 == 3);
-  var fund_address2 = ds2~load_msg_addr();
-  throw_unless(105, equal_slices(fund_address2, myaddress));
-  var fund_percentage2 = ds2~load_uint(8);
-  fund_percentage2~dump();
-  throw_unless(105, fund_percentage2 == 40);
   var selling_ads2 = ds2~load_dict();
   selling_ads2~dump();
   throw_unless(106, dict_empty?(selling_ads2));
@@ -632,36 +555,23 @@ int __test_end() {
 
   cell body_to_sign = begin_cell()
     .store_uint(2, 32)    ;; seqno
-    .store_uint(3000, 32)  ;; op 32 bits , end of operation
+    .store_uint(OP_MANAGER_ENDS_OPERATION, 32)  ;; op 32 bits , end of operation
     .end_cell();
 
   int tmphash = cell_hash(body_to_sign);
   tmphash~dump();
-  throw_if(100, tmphash != 75448293990567837243307220766573694089363560397841802024508960039381536596275);
-
-  {- 
-> keypair = Ton.mnemonic_to_keypair("rail sound peasant garment bounce trigger true abuse arctic gravity ribbon ocean absurd okay blue remove neck cash reflect sleep hen portion gossip arrow")
-> hn = 
-> h = :binary.encode_unsigned(hn)
-> f = Ton.Utils.sign(h, keypair.secret_key)
-> b = :binary.decode_unsigned(f)
-# Da firma de 512 bits
-> b >>> 256
-# Da primeros 32 bytes
-> b &&& 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-# Da segundos 32 bytes
-   -}
+  throw_if(100, tmphash != 19628012290069340860609293167367498616118345354005210669087707131081901183457);
 
   cell body = begin_cell()
-    .store_uint(53250339312731016582424983432383139781902369449947917109745126181038964724008, 256) ;; signature part 1
-    .store_uint(22882713526318321004032172459050928779909847484630851180454943814167472506883, 256) ;; signature part 2
+    .store_uint(63721334857323908724111397497447115055981967514355889161690703554970726536909, 256) ;; signature part 1
+    .store_uint(67007350735801824008014894016613596343591943945488611439234850185551089340416, 256) ;; signature part 2
     .store_ref(body_to_sign) 
   .end_cell();
   slice sbody = body.begin_parse();
 
   cell full = begin_cell()
     .store_uint(0x6, 4)            ;; 4 for flags
-    .store_slice(myaddress)        ;; 2..267 sender_address for addr_none would be 2 bits 00 --normally will be replaced by sender address
+    .store_slice(manager_address)        ;; 2..267 sender_address for addr_none would be 2 bits 00 --normally will be replaced by sender address
     .store_slice(myaddress)        ;; 2..267  0043800efd...73010  // destination address
     .store_coins(200000000)        ;; 0.2TON
     .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 ) ;; extra-currencies (1), ihr-fee (4 for empty VarUInteger 16), fwd-fee (4), cur_lt (64), now (32) init (1)
@@ -692,11 +602,7 @@ int __test_end() {
   throw_unless(800, success);
 
   cell data = begin_cell()             ;; initial data of contract
-      .store_slice(myaddress)               ;; owner's address
-      .store_uint(33451796392292203403440659262546624803323361398262915766836839499908567744559, 256) ;; public_key 
       .store_uint(2, 32)              ;; seqno
-      .store_slice(myaddress)         ;; fund address
-      .store_uint(40, 8)              ;; percentage for fund
       .store_dict(selldict)           ;; selling ads dictionary
       .store_dict(new_dict())         ;; buying ads dictionary
       .store_dict(new_dict())         ;; paid for buying ad dictionary
@@ -713,18 +619,9 @@ int __test_end() {
 
   ~strdump("Analizando");
   var ds2 = get_data().begin_parse();
-  slice manager_address2 = ds2~load_msg_addr();
-  throw_unless(104, equal_slices(manager_address2, myaddress));
-  var public_key2 = ds2~load_uint(256);
-  public_key2~dump();
   var gseqno2 = ds2~load_uint(32);
   gseqno2~dump();
   throw_unless(105, gseqno2 == 3);
-  var fund_address2 = ds2~load_msg_addr();
-  throw_unless(105, equal_slices(fund_address2, myaddress));
-  var fund_percentage2 = ds2~load_uint(8);
-  fund_percentage2~dump();
-  throw_unless(105, fund_percentage2 == 40);
   var selling_ads2 = ds2~load_dict();
   selling_ads2~dump();
   throw_unless(106, dict_empty?(selling_ads2));
