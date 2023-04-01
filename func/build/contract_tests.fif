@@ -2656,7 +2656,7 @@ PROGRAM{
     267 PUSHINT	//  address _4 _5=267
     DICTGET
     NULLSWAPIFNOT	//  sd success
-    1202 THROWIFNOT
+    505 THROWIFNOT
     LDVARUINT16	//  adcoins sd
     64 LDU	//  adcoins _21 _20
     DROP	//  adcoins validuntil

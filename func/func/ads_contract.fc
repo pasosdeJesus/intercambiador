@@ -481,7 +481,7 @@ int get_amount_selling_ads() method_id {
 (int, int) get_selling_ad(slice address) method_id {
   load_data();
   var (sd, success) = selling_ads.dict_get?(267, address);
-  throw_unless(1202, success);
+  throw_unless(ERR_SELLER_WITHOUT_AD, success);
 
   int adcoins = sd~load_coins();
   int validuntil = sd~load_uint(64);
