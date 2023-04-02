@@ -1,0 +1,54 @@
+# Scripts to deploy the smart contract and to use it from frontend/backend
+
+To prepare run
+```
+yarn
+```
+
+## Generate Cell
+
+To generate a cell in `ads_contract.cell` with the smart contract
+`../func/func/ads_contract.fc` compiled,  run:
+```
+yarn cell
+```
+
+## Deploy Smart Contract
+
+To deploy that cell fill in .env the variables
+
+export MANAGER_SECRET24="pattern ... trap"
+
+export MANAGER_ADDRESS="E...n"
+
+export HANDSFORSIERRALEONE_ADDRESS="E..k"
+
+and then run:
+```
+yarn deploy
+```
+
+Put the address generated in `../.env` in the variable `ADSCONTRACT_ADDRESS`
+
+
+## Tests onchain
+
+Run
+```
+yarn test
+```
+This will call the getters of the contract onchain.
+
+To test adding add an ad as manager run:
+```
+npx ts-node test_add_selling_ad
+```
+
+After if you run `yarn test`  you should be able to see an ad from manager.
+
+## Scripts
+
+| Script | What it does |
+| npx ts-node run_end_of_operation | Ends operation of contract returing coins and destroying contract |
+| npx ts-node prepare_selling_ad | Backend uses this to generate a message signed by manager to create a selling ad with the right seqno |
+```
