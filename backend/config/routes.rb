@@ -20,13 +20,11 @@ Rails.application.routes.draw do
       end
     end
     devise_for :usuarios, :skip => [:registrations], module: :devise
- 
-    resources :anuncios
 
-    get 'anuncios_venta', to: 'anuncios#index', as: :anuncios_venta
+    resources :anunciosventa
 
-    get 'anuncio_venta_preparar', to: 'anuncios#preparar', 
-      as: :anuncio_venta_preparar
+    get 'anuncioventa_preparar', to: 'anunciosventa#preparar', 
+      as: :anuncioventa_preparar
 
     get "dapp/getAccountInfo", to: "testigoaut#cuenta",
       as: :testigoaut_cuenta

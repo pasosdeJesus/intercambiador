@@ -4,12 +4,12 @@ if (Usuario.where(id: 2).count == 0)
   usuario = Usuario.create! PRUEBA_USUARIO.merge(
     id: 2
   )
-  anuncio = Anuncio.new PRUEBA_ANUNCIO.merge(
+  anuncioventa = Anuncioventa.new PRUEBA_ANUNCIO.merge(
     id: 1,
     usuario_id: 2
   )
-  anuncio.usuario_id = usuario.id
-  anuncio.save!
+  anuncioventa.usuario_id = usuario.id
+  anuncioventa.save!
 end
 
 
@@ -21,7 +21,7 @@ if (Usuario.where(id: 3).count == 0)
     descripcion: 'Cambios Super',
     email: 'miguelrojas@localhost'
   )
-  anuncio2 = Anuncio.new PRUEBA_ANUNCIO.merge(
+  anuncioventa2 = Anuncioventa.new PRUEBA_ANUNCIO.merge(
     id: 2,
     ton: 20,
     margenflotante: 104,
@@ -29,6 +29,6 @@ if (Usuario.where(id: 3).count == 0)
     maximotiempo: 100,
     usuario_id: 3
   )
-  anuncio2.usuario_id = usuario2.id
-  anuncio2.save!
+  anuncioventa2.usuario_id = usuario2.id
+  anuncioventa2.save!
 end

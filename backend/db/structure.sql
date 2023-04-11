@@ -210,10 +210,10 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: anuncio; Type: TABLE; Schema: public; Owner: -
+-- Name: anuncioventa; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.anuncio (
+CREATE TABLE public.anuncioventa (
     id bigint NOT NULL,
     ton double precision,
     margenflotante double precision,
@@ -226,10 +226,10 @@ CREATE TABLE public.anuncio (
 
 
 --
--- Name: anuncio_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: anuncioventa_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.anuncio_id_seq
+CREATE SEQUENCE public.anuncioventa_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -238,10 +238,10 @@ CREATE SEQUENCE public.anuncio_id_seq
 
 
 --
--- Name: anuncio_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: anuncioventa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.anuncio_id_seq OWNED BY public.anuncio.id;
+ALTER SEQUENCE public.anuncioventa_id_seq OWNED BY public.anuncioventa.id;
 
 
 --
@@ -1559,10 +1559,10 @@ CREATE TABLE public.usuario (
 
 
 --
--- Name: anuncio id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: anuncioventa id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.anuncio ALTER COLUMN id SET DEFAULT nextval('public.anuncio_id_seq'::regclass);
+ALTER TABLE ONLY public.anuncioventa ALTER COLUMN id SET DEFAULT nextval('public.anuncioventa_id_seq'::regclass);
 
 
 --
@@ -1714,11 +1714,11 @@ ALTER TABLE ONLY public.msip_anexo
 
 
 --
--- Name: anuncio anuncio_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: anuncioventa anuncioventa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.anuncio
-    ADD CONSTRAINT anuncio_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.anuncioventa
+    ADD CONSTRAINT anuncioventa_pkey PRIMARY KEY (id);
 
 
 --
@@ -2058,10 +2058,10 @@ ALTER TABLE ONLY public.usuario
 
 
 --
--- Name: index_anuncio_on_usuario_id; Type: INDEX; Schema: public; Owner: -
+-- Name: index_anuncioventa_on_usuario_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_anuncio_on_usuario_id ON public.anuncio USING btree (usuario_id);
+CREATE INDEX index_anuncioventa_on_usuario_id ON public.anuncioventa USING btree (usuario_id);
 
 
 --
@@ -2299,10 +2299,10 @@ ALTER TABLE ONLY public.msip_departamento
 
 
 --
--- Name: anuncio fk_rails_94c1f822d7; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: anuncioventa fk_rails_94c1f822d7; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.anuncio
+ALTER TABLE ONLY public.anuncioventa
     ADD CONSTRAINT fk_rails_94c1f822d7 FOREIGN KEY (usuario_id) REFERENCES public.usuario(id);
 
 
@@ -2615,6 +2615,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20221212021533'),
 ('20230215184937'),
 ('20230301145222'),
-('20230301212546');
+('20230301212546'),
+('20230411120837');
 
 
