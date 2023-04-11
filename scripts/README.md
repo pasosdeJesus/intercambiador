@@ -39,12 +39,15 @@ yarn test
 ```
 This will call the getters of the contract onchain.
 
-To test adding add an ad as manager run:
+To test adding add an ad as manager (with more than 5.6 TON in wallet) run:
 ```
 npx ts-node test_add_selling_ad
 ```
+After you can check with an explorer that the ads contract gave utilites
+to the manager (around 0.5) and to the fund (around 0.05).
 
-After if you run `yarn test`  you should be able to see an ad from manager.
+If you run `yarn test`  you should be able to see an ad from manager.
+
 
 ## Scripts
 

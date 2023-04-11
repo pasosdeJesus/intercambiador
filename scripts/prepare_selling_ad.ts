@@ -19,8 +19,8 @@ async function main() {
 
   const msgBody = await AdsContract.prepareSellingAd();
   const buf = msgBody.toBoc()
-  const bufhex = buf.slice(0, buf.length).toString("hex");
-  console.log("bochex: ", bufhex);
+  const str64 = buf.toString("base64");
+  console.log("bocbase64:", str64);
 }
 
 main();
