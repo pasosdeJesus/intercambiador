@@ -2,10 +2,9 @@ This sources are based on
 <https://github.com/ton-connect/demo-dapp-backend with> 
 with minimal changes
 
-
 # Compilation
 
-You can follow the instructions of `Dockerfile`.  
+You can follow the instructions of the `Dockerfile`.
 On adJ/OpenBSD they would be:
 
         doas pkg_add go
@@ -19,4 +18,5 @@ Tha last two steps are also run with:
 # Running
 
 Run with
-        HS256_SECRET=replace_with_secure_secret_shared_with_db_backedn TONAPI_TOKEN="your_tonapi_token" ./tonproof
+        HS256_SECRET="replace_with_secure_secret_shared_with_db_backend"\
+        TONAPI_TOKEN="your_tonapi_token" ./tonproof
