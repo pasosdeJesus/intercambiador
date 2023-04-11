@@ -14,7 +14,7 @@ import { useTonWallet } from '../../hooks/useTonWallet';
 import { useTonWalletConnectionError } from '../../hooks/useTonWalletConnectionError';
 import { authPayloadQuery } from '../../state/auth-payload';
 import { walletsListQuery } from '../../state/wallets-list';
-import { TonProofDemoApi } from '../../TonProofDemoApi';
+import { TonProofApi } from '../../TonProofApi';
 import { isMobile, openLink } from '../../utils';
 import './style.css';
 
@@ -23,7 +23,7 @@ const menu = (
       onClick={() => connector.disconnect()}
       items={[
         {
-          label: 'Disconnect',
+          label: 'Desconectar',
           key: '1',
         },
       ]}
@@ -37,8 +37,8 @@ export function AuthButton() {
   const onConnectErrorCallback = useCallback(() => {
       setModalUniversalLink('');
       notification.error({
-        message: 'Connection was rejected',
-        description: 'Please approve connection to the dApp in your wallet.',
+        message: 'La conexión fue rechazada',
+        description: 'Por favor apruebe la conexión en su billetera.',
       });
     }, []);
   useTonWalletConnectionError(onConnectErrorCallback);
@@ -72,8 +72,10 @@ export function AuthButton() {
     }
 
     const tonkeeperConnectionSource = {
-      universalLink: (walletsList.contents.walletsList[0] as WalletInfoRemote).universalLink,
-      bridgeUrl: (walletsList.contents.walletsList[0] as WalletInfoRemote).bridgeUrl,
+      universalLink: 
+      (walletsList.contents.walletsList[0] as WalletInfoRemote).universalLink,
+      bridgeUrl: 
+      (walletsList.contents.walletsList[0] as WalletInfoRemote).bridgeUrl,
     };
 
     const universalLink = connector.connect(tonkeeperConnectionSource, {
@@ -87,7 +89,7 @@ export function AuthButton() {
       setModalUniversalLink(universalLink);
     }
   }, [walletsList, authPayload]);
-    
+
   return (
     <>
       <div className="auth-button">
@@ -102,12 +104,12 @@ export function AuthButton() {
           </Dropdown>
           ) : (
           <Button shape="round" type="primary" onClick={handleButtonClick}>
-            Connect Wallet
+            Conectar Billetera
           </Button>
         )}
       </div>
       <Modal
-        title="Connect to Tonkeeper"
+        title="Conectar con Tonkeeper"
         open={!!modalUniversalLink}
         onOk={() => setModalUniversalLink('')}
         onCancel={() => setModalUniversalLink('')}

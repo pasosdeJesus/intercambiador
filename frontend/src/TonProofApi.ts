@@ -1,20 +1,18 @@
 /* Based on
- * https://intercambiador.pasosdeJesus.org/tonconnect-manifest.json
+ * https://github.com/ton-connect/demo-dapp-with-backend/blob/master/src/TonProofDemoApi.ts
  */
 import { TonProofItemReplySuccess } from '@tonconnect/protocol';
 import { Account } from '@tonconnect/sdk';
 import { connector } from './connector';
+import * as AdsConstants from '../../scripts/ads_constants'
 
-class TonProofDemoApiService {
+class TonProofApiService {
   localStorageKey = 'intercambiador-token';
-
-  host = 'https://intercambiador.pasosdeJesus.org:4443';
-  host2 = 'https://intercambiador.pasosdeJesus.org:3443';
 
   accessToken: string | null = null;
 
   constructor() {
-    console.log('** TonProofDemoApi constructor');
+    console.log('** TonProofApi constructor');
     this.accessToken = localStorage.getItem(this.localStorageKey);
 
     connector.onStatusChange((wallet) => {
@@ -41,9 +39,9 @@ class TonProofDemoApiService {
   }
 
   async generatePayload() {
-    console.log('** TonProofDemoApi generatePayload');
+    console.log('** TonProofApi generatePayload');
     const response = await (
-      await fetch(`${this.host}/ton-proof/generatePayload`, {
+      await fetch(`${AdsConstants.authBackend}/ton-proof/generatePayload`, {
         method: 'POST',
       })
     ).json();
@@ -52,7 +50,7 @@ class TonProofDemoApiService {
   }
 
   async checkProof(proof: TonProofItemReplySuccess['proof'], account: Account) {
-    console.log('** TonProofDemoApi checkProof');
+    console.log('** TonProofApi checkProof');
     try {
       const reqBody = {
         address: account.address,
@@ -64,7 +62,7 @@ class TonProofDemoApiService {
       };
 
       const response = await (
-        await fetch(`${this.host}/ton-proof/checkProof`, {
+        await fetch(`${AdsConstants.authBackend}/ton-proof/checkProof`, {
           method: 'POST',
           body: JSON.stringify(reqBody),
         })
@@ -80,9 +78,9 @@ class TonProofDemoApiService {
   }
 
   async getAccountInfo(account: Account) {
-    console.log('** TonProofDemoApi getAccoountInfo', account);
+    console.log('** TonProofApi getAccoountInfo', account);
     const response = await (
-      await fetch(`${this.host2}/dapp/getAccountInfo?network=${account.chain}`, {
+      await fetch(`${AdsConstants.dbBackend}/dapp/getAccountInfo?network=${account.chain}`, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
@@ -93,12 +91,39 @@ class TonProofDemoApiService {
     return response as {};
   }
 
+  async getSellingAdsList(account: Account) {
+    console.log('** TonProofApi getSellingAdsList', account);
+    const response = await (
+      await fetch(`${AdsConstants.dbBackend}/anuncios_venta.json`, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    ).json();
+
+    return response as {}; 
+  }
+
+  async getSellingAdMsg(account: Account) {
+    console.log('** TonProofApi getSellingAdMsg', account);
+    const response = await (
+      await fetch(`${AdsConstants.dbBackend}/anuncio_venta_preparar.json`, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    ).json();
+
+    return response as {}; 
+  }
 
   reset() {
-    console.log('** TonProofDemoApi reset');
+    console.log('** TonProofApi reset');
     this.accessToken = null;
     localStorage.removeItem(this.localStorageKey);
   }
 }
 
-export const TonProofDemoApi = new TonProofDemoApiService();
+export const TonProofApi = new TonProofApiService();

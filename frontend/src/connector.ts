@@ -1,17 +1,23 @@
-/* Based on 
+/* Based on
  * https://github.com/ton-connect/demo-dapp-with-backend/blob/master/src/connector.ts
  */
-
-import { 
-  SendTransactionRequest, TonConnect, UserRejectsError, 
-  WalletInfo, WalletInfoInjected 
+import {
+  SendTransactionRequest,
+  TonConnect,
+  UserRejectsError,
+  WalletInfo,
+  WalletInfoInjected
 } from '@tonconnect/sdk';
 import { notification } from 'antd';
-import { isMobile, openLink } from './utils';
+import {
+  isMobile,
+  openLink
+} from './utils';
+import * as AdsConstants from '../../scripts/ads_constants'
 
-const dappMetadata = { 
-  manifestUrl: 
-    'https://intercambiador.pasosdeJesus.org/tonconnect-manifest.json' 
+const dappMetadata = {
+  manifestUrl:
+    `https://${AdsConstants.intercambiadorDomain}/tonconnect-manifest.json`
 };
 
 export const connector = new TonConnect(dappMetadata);
@@ -19,7 +25,7 @@ export async function sendTransaction(
   tx: SendTransactionRequest, wallet: WalletInfo
 ): Promise<{ boc: string }> {
   try {
-    if ('universalLink' in wallet && 
+    if ('universalLink' in wallet &&
         !(wallet as WalletInfoInjected).embedded && isMobile()) {
       openLink(addReturnStrategy(wallet.universalLink, 'none'), '_blank');
     }

@@ -5,7 +5,7 @@ import { Button, Typography } from 'antd';
 import React, { useCallback, useState } from 'react';
 import ReactJson from 'react-json-view';
 import { useTonWallet } from '../../hooks/useTonWallet';
-import { TonProofDemoApi } from '../../TonProofDemoApi';
+import { TonProofApi } from '../../TonProofApi';
 import './style.css';
 
 const { Title } = Typography;
@@ -19,7 +19,7 @@ export function TonProofDemo() {
       return;
       }
       console.log(wallet.account)
-      const response = await TonProofDemoApi.getAccountInfo(wallet.account);
+      const response = await TonProofApi.getAccountInfo(wallet.account);
 
       setData(response);
       }, [wallet]);

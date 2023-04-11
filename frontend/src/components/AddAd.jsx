@@ -10,8 +10,10 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import axios from "axios";
 import { CHAIN } from "@tonconnect/protocol";
 import { Ad } from "./Ad";
-import { TonProofDemoApi } from '../TonProofDemoApi';
+import { TonProofApi } from '../TonProofApi';
 import { walletsListQuery } from '../state/wallets-list';
+import * as AdsConstants from '../../../scripts/ads_constants';
+
 
 export function AddAd () {
   const [data, setData] = useState({});
@@ -24,26 +26,34 @@ export function AddAd () {
       if (!wallet) {
         return;
       }
+      console.log("wallet.account=", wallet.account)
+
+      const response = await TonProofApi.getSellingAdMsg();
+
+      console.log("response=", response);
+
       const tx = {
         validUntil: Date.now() + 1000000,
         messages: [
           {
-            address: '0:412410771DA82CBA306A55FA9E0D43C9D245E38133CB58F1457DFB8D5CD8892F',
-            amount: '20000000',
-          },
-          {
-            address: '0:E69F10CC84877ABF539F83F879291E5CA169451BA7BCE91A37A5CED3AB8080D3',
-            amount: '60000000',
+            address: AdsConstants.adsContractAddress,
+            amount: '5200000000',  // 5.2 TON
+            payload: response['bocbase64']
           },
         ],
       };
 
-      console.log(wallet.account)
-      const response = sendTransaction(tx, walletsList.contents.walletsList[0])
-      //const response = sendTransaction(tx, wallet)
-      //const response = await TonProofDemoApi.sendAddAd(wallet.account, 6);
+      console.log("wallet.account", wallet.account)
+      const response2 = await sendTransaction(
+        tx, walletsList.contents.walletsList[0]
+      )
 
-      setData(response);
+      console.log("response2", response2);
+
+      //const response = sendTransaction(tx, wallet)
+      //const response = await TonProofApi.sendAddAd(wallet.account, 6);
+
+      setData(response2);
     },
     [wallet]
   );
