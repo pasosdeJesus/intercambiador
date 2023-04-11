@@ -2,7 +2,6 @@ class AnunciosventaController < ApplicationController
   before_action :set_anuncioventa, only: %i[ show update destroy ]
 
   def obtener_token_autorizacion
-    debugger
     if !request || !request.headers || !request.headers["Authorization"] ||
         request.headers["Authorization"][0..6] != "Bearer "
       render json: '{}', status: :unprocessable_entity
@@ -54,12 +53,14 @@ class AnunciosventaController < ApplicationController
   # GET /anunciosventa/1
   # GET /anunciosventa/1.json
   def show
+    puts "anunciosventa: show"
     return
   end
 
   # POST /anunciosventa
   # POST /anunciosventa.json
   def create
+    puts "anunciosventa: create"
     return
     @anuncioventa = Anuncioventa.new(anuncioventa_params)
 
@@ -73,6 +74,7 @@ class AnunciosventaController < ApplicationController
   # PATCH/PUT /anunciosventa/1
   # PATCH/PUT /anunciosventa/1.json
   def update
+    puts "anunciosventa: update"
     return
     if @anuncioventa.update(anuncioventa_params)
       render :show, status: :ok, location: @anuncioventa
@@ -84,11 +86,13 @@ class AnunciosventaController < ApplicationController
   # DELETE /anunciosventa/1
   # DELETE /anunciosventa/1.json
   def destroy
+    puts "anunciosventa: delete"
     return
     @anuncioventa.destroy
   end
 
   def preparar
+    puts "anunciosventa: preparar"
     direccion = obtener_token_autorizacion
     if direccion.nil?
       return

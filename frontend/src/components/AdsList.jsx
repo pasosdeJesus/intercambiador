@@ -47,13 +47,13 @@ export function AdsList () {
   }
 
   return (
-      <div className="ton-proof-demo">
+      <div className="sellingads">
       {wallet ? (
           <Button type="primary" shape="round" onClick={handleClick}>
             Ver Anuncios de venta
           </Button>
           ) : (
-            <div className="ton-proof-demo__error">Conecte la billetera para llamar el API</div>
+            <div className="sellingads__error">Conecte la billetera para llamar el API</div>
             )}
       <ul>{anuncios}</ul>
       </div>

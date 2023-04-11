@@ -3,7 +3,7 @@ require "test_helper"
 class AnunciosventaControllerTest < ActionDispatch::IntegrationTest
   def crear_token_autorizacion_prueba
     secreto = ENV.fetch('HS256_SECRET')
-    carga = { data: 'test' }
+    carga = { address: 'test' }
     token = JWT.encode carga, secreto, 'HS256'
     return token
   end
@@ -13,10 +13,24 @@ class AnunciosventaControllerTest < ActionDispatch::IntegrationTest
     #@anuncioventa = anuncioventa()
   end
 
-  test "should get index" do
+  test "deberia obtener listado" do
     token = crear_token_autorizacion_prueba
-    get anunciosventa_url, as: :json, params: {},
-      headers: { HTTP_AUTHORIZATION: "Bearer #{token}" }
+    get anunciosventa_url, as: :json,
+      headers: { 
+        HTTP_AUTHORIZATION: "Bearer #{token}",
+        "Content-Type": "application/json"
+      }
+    # No está haciendolo
+    assert_response :success
+  end
+
+  test "debería obtener mensaje por enviar" do
+    token = crear_token_autorizacion_prueba
+    get anuncioventa_preparar_url, as: :json,
+      headers: { 
+        HTTP_AUTHORIZATION: "Bearer #{token}",
+        "Content-Type": "application/json"
+      }
     # No está haciendolo
     assert_response :success
   end
@@ -33,7 +47,7 @@ class AnunciosventaControllerTest < ActionDispatch::IntegrationTest
           ton: @anuncioventa.ton, 
           usuario_id: @anuncioventa.usuario_id 
         } 
-      }, as: :json
+      }, format: :json
     end
 
     assert_response :created
@@ -42,7 +56,7 @@ class AnunciosventaControllerTest < ActionDispatch::IntegrationTest
   test "should show anuncioventa" do
     skip
     debugger
-    get anuncioventa_url(@anuncioventa), as: :json
+    get anuncioventa_url(@anuncioventa), format: :json
     assert_response :success
   end
 
@@ -57,7 +71,7 @@ class AnunciosventaControllerTest < ActionDispatch::IntegrationTest
         ton: @anuncioventa.ton, 
         usuario_id: @anuncioventa.usuario_id 
       } 
-    }, as: :json
+    }, format: :json
     assert_response :success
   end
 
@@ -65,7 +79,7 @@ class AnunciosventaControllerTest < ActionDispatch::IntegrationTest
     skip
     debugger
     assert_difference("Anuncioventa.count", -1) do
-      delete anuncioventa_url(@anuncioventa), as: :json
+      delete anuncioventa_url(@anuncioventa), format: :json
     end
 
     assert_response :no_content

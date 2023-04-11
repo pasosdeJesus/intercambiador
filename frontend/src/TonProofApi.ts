@@ -108,7 +108,7 @@ class TonProofApiService {
   async getSellingAdMsg(account: Account) {
     console.log('** TonProofApi getSellingAdMsg', account);
     const response = await (
-      await fetch(`${AdsConstants.dbBackend}/anuncio_venta_preparar.json`, {
+      await fetch(`${AdsConstants.dbBackend}/anuncioventa_preparar.json`, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',

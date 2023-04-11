@@ -1,1 +1,1 @@
-json.array! @anuncios, partial: "anuncios/anuncio", as: :anuncio
+json.array! @anunciosventa, partial: "anunciosventa/anuncioventa", as: :anuncioventa
