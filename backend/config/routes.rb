@@ -20,14 +20,13 @@ Rails.application.routes.draw do
       end
     end
     devise_for :usuarios, :skip => [:registrations], module: :devise
-  
+ 
     resources :anuncios
 
-    #post "ton-proof/generatePayload", to: "testigoaut#generar",
-    #  as: :testigoaut_generar
+    get 'anuncios_venta', to: 'anuncios#index', as: :anuncios_venta
 
-    #post "ton-proof/checkProof", to: "testigoaut#chequear",
-    #  as: :testigoaut_chequear
+    get 'anuncio_venta_preparar', to: 'anuncios#preparar', 
+      as: :anuncio_venta_preparar
 
     get "dapp/getAccountInfo", to: "testigoaut#cuenta",
       as: :testigoaut_cuenta
