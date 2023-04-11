@@ -28,7 +28,26 @@ export function AddAd () {
       }
       console.log("wallet.account=", wallet.account)
 
-      const response = await TonProofApi.getSellingAdMsg();
+      const response = TonProofApi.getSellingAdMsg()
+        .then(async response => {
+          const isJson = response.headers.get('content-type')?.includes('application/json');
+          console.log('isJsonw=', isJson);
+          const data = isJson ? await response.json() : null;
+          console.log('data=', data);
+
+          // check for error response
+          if (!response.ok) {
+            // get error message from body or default to response status
+            const error = (data && data.message) || response.status;
+            return Promise.reject(error);
+          }
+        })
+        .catch(error => {
+          //element.parentElement.innerHTML = `Error: ${error}`;
+          setData(`Error: ${error}`);
+          console.error('There was an error!', error);
+        });
+      ;
 
       console.log("response=", response);
 

@@ -94,7 +94,7 @@ class TonProofApiService {
   async getSellingAdsList(account: Account) {
     console.log('** TonProofApi getSellingAdsList', account);
     const response = await (
-      await fetch(`${AdsConstants.dbBackend}/anuncios_venta.json`, {
+      await fetch(`${AdsConstants.dbBackend}/anunciosventa.json`, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
@@ -114,6 +114,21 @@ class TonProofApiService {
           'Content-Type': 'application/json',
         },
       })
+      .then(async response => {
+          const isJson = response.headers.get('content-type')?.includes('application/json');
+          const data = isJson ? await response.json() : null;
+
+          // check for error response
+          if (!response.ok) {
+            // get error message from body or default to response status
+            const error = (data && data.error) || response.status;
+            return Promise.reject(error);
+          }
+        })
+        .catch(error => {
+          alert('Error: ' + error);
+          console.error('There was an error!', error);
+        })
     ).json();
 
     return response as {}; 

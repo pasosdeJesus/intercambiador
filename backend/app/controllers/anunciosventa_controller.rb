@@ -4,7 +4,8 @@ class AnunciosventaController < ApplicationController
   def obtener_token_autorizacion
     if !request || !request.headers || !request.headers["Authorization"] ||
         request.headers["Authorization"][0..6] != "Bearer "
-      render json: '{}', status: :unprocessable_entity
+      render json: {error: 'Falta encabezado con autoerización'}, 
+                    status: :unprocessable_entity
       return nil
     end
     token = request.headers["Authorization"][7..-1]
@@ -21,14 +22,14 @@ class AnunciosventaController < ApplicationController
       carga = JWT.decode token, hmac_secret, true, 
         {verify_expiration: true, algorithm: 'HS256' }
     rescue JWT::ExpiredSignature
-      render json: ["Firma vencida, cierre la conexión de la billetera y " +
-              "vuelvala a establecer"], status: :unprocessable_entity
+      render json: {error: "Firma vencida, cierre la conexión de la billetera "\
+                    "vuelvala a establecer"}, status: :unprocessable_entity
       return nil
     end
     puts "carga=",carga
     if !carga || !carga.count || carga.count < 1 || !carga[0] || 
         !carga[0]['address']
-      render json: ["No se encontró dirección en JWT"], 
+      render json: {error: "No se encontró dirección en JWT"}, 
         status: :unprocessable_entity
       return nil
     end
@@ -67,7 +68,7 @@ class AnunciosventaController < ApplicationController
     if @anuncioventa.save
       render :show, status: :created, location: @anuncioventa
     else
-      render json: @anuncioventa.errors, status: :unprocessable_entity
+      render json: {error: @anuncioventa.errors}, status: :unprocessable_entity
     end
   end
 
@@ -79,7 +80,8 @@ class AnunciosventaController < ApplicationController
     if @anuncioventa.update(anuncioventa_params)
       render :show, status: :ok, location: @anuncioventa
     else
-      render json: @anuncioventa.errors, status: :unprocessable_entity
+      render json: {error: @anuncioventa.errors}, 
+        status: :unprocessable_entity
     end
   end
 
@@ -97,11 +99,45 @@ class AnunciosventaController < ApplicationController
     if direccion.nil?
       return
     end
+    if Usuario.where(direccion: direccion).count == 0
+      t = Usuario.create(
+        nusuario: "u" + direccion[2..5]+'..'+direccion[-8..-1],
+        rol: Ability::ROLOPERADOR,
+        encrypted_password: direccion[0..10],
+        fechacreacion: Date.today,
+        email: direccion[0..5]+'..'+direccion[-8..-1]+"@ejemplo.com",
+        nombre: direccion[0..5]+'..'+direccion[-8..-1],
+        direccion: direccion
+      )
+      if !t.save
+        render json: {
+          error: "No pudo crearse usuario"
+        }, status: :unprocessable_entity 
+        return
+      end
+    end
+    usuario = Usuario.where(direccion: direccion).take
+    if Anuncioventa.where(usuario_id: usuario.id).count > 0
+      render json: {
+        error: "El usuario ya tienen un anuncio"
+      }, status: 409 # conflict
+      return
+    end
     # Estilo interactor de punk-city 
     res = `(cd ../scripts; npx ts-node prepare_selling_ad)`
-    bocbase64 = res.match(/bocbase64: (.*)/)[1]
-    puts "bocbase64=", bocbase64
-    render json: "{\"bocbase64\": \"#{bocbase64}\"}", status: :ok
+    if res.match(/bocbase64: (.*)/)
+      bocbase64 = res.match(/bocbase64: (.*)/)[1]
+      puts "bocbase64=", bocbase64
+      render json: "{\"bocbase64\": \"#{bocbase64}\"}", status: :ok
+
+      ActualizaAnunciosventaJob.perform_later(direccion, Time.now())
+    else
+      render json: {
+        error: "No pudo prepararse mensaje para crear anuncio"
+      }, status: :unprocessable_entity 
+      return
+
+    end
   end
 
   private

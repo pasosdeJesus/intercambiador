@@ -1,6 +1,12 @@
 class Ability  < Msip::Ability
 
 
+  def nobasicas_indice_seq_con_id
+    Msip::Ability::NOBASICAS_INDSEQID + [
+      ["", "Anuncioventa"]
+    ]
+  end
+
   # Se definen habilidades con cancancan
   # @usuario Usuario que hace petición
   def initialize(usuario = nil)

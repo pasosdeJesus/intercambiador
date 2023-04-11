@@ -13,6 +13,7 @@ import * as AdsConstants from "./ads_constants";
 
 async function main() {
   const endpoint = await getHttpEndpoint({ network: "testnet" });
+  console.log("endpoint=", endpoint);
   const client = new TonClient({ endpoint });
 
   if (typeof process.env.ADSCONTRACT_ADDRESS == "undefined") {

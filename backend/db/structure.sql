@@ -1553,6 +1553,7 @@ CREATE TABLE public.usuario (
     regionsjr_id integer,
     nombre character varying(50) COLLATE public.es_co_utf_8,
     tema_id integer,
+    direccion character varying(1024),
     CONSTRAINT usuario_check CHECK (((fechadeshabilitacion IS NULL) OR (fechadeshabilitacion >= fechacreacion))),
     CONSTRAINT usuario_rol_check CHECK ((rol >= 1))
 );
@@ -2121,6 +2122,13 @@ CREATE INDEX index_msip_ubicacion_on_id_pais ON public.msip_ubicacion USING btre
 
 
 --
+-- Name: index_usuario_on_direccion; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_usuario_on_direccion ON public.usuario USING btree (direccion);
+
+
+--
 -- Name: index_usuario_on_email; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2616,6 +2624,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230215184937'),
 ('20230301145222'),
 ('20230301212546'),
-('20230411120837');
+('20230411120837'),
+('20230411145054');
 
 
