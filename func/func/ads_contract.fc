@@ -450,7 +450,8 @@ int get_amount_selling_ads() method_id {
 
 ;; Returns the n-th selling ad
 ;; n must be between 0 and get_amount_selling_ads() - 1
-;; Returns (address, coins, valid_until) or if n is out of boundaries returns ("", -1, 0)
+;; Returns (address, coins, valid_until) or if n is out of boundaries 
+;;    returns ("", -1, 0)
 (slice, int, int) get_nth_selling_ad(int n) method_id {
   load_data();
 

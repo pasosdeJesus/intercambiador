@@ -15,24 +15,22 @@ You can see a very crude demo at <https://intercambiador.pasosdeJesus.org>,
 by using TonKeeper it just works with Ton-Connect 2.0 and uses the 
 authentication backend to login and after the database backend to query 
 the ads in the database --both backends are coordinated for authentication 
-with JSON Web Tokens and a common secret used to encrypt and decrypt the 
-address of the wallet that connects.
+first with TonProof and then with JSON Web Tokens by using a common secret 
+used to encrypt and decrypt the address of the wallet that connects.
 
 Neither the frontend nor the backends still interact with the smart contract,
-although an advanced version of the smart contract is already deployed in 
-the address
-[EQBTap0TCkPDJo-0VA1R50mBHTyzjx1H5cpuJNX3WtVUIgHt](https://testnet.tonscan.org/address/EQBTap0TCkPDJo-0VA1R50mBHTyzjx1H5cpuJNX3WtVUIgHt)
+although an advanced version of the smart contract is already deployed
+(see address in .env.plantilla).
 
-And it can be tested with the scripts available at `backend-smartcont` to
-query it and to add an Ad (after that it will give funds to the manager 
-and to the fund).
+The deployed smart contract can be tested with the scripts available at 
+`scripts` to query it and to add an example Ad of the manager.
 
 
 ## Organization
 
 Directories:
 * func: Smart contract to manage list of ads and their coins and its tests
-* backend-smartcont: Scripts to deploy the smart contract and to use it
+* scripts: Scripts to deploy the smart contract and to use it from command line
 * backend-auth: In Go manages authentication with Ton Connect 2.0
 * backend: In Ruby on Rails manages database
 * frontend: It uses backend and backend-auth
@@ -73,6 +71,6 @@ The file `Procfile` specifies how to start each process:
     in `backend-auth/README.md`
   * The development server of the frontend runs unencrypted in other
     port (e.g unencrypted in 5173 and encrypted with an nginx proyx 
-    in another port e.g 443).  Check instruciones in `frontend/README.md`
+    in another port e.g 443).  Check instructions in `frontend/README.md`
 
 
