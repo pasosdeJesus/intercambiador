@@ -25,6 +25,10 @@ class AnunciosventaController < ApplicationController
       render json: {error: "Firma vencida, cierre la conexión de la billetera "\
                     "vuelvala a establecer"}, status: :unprocessable_entity
       return nil
+    rescue e
+      render json: {error: "No pudo descifrarse token"}, 
+        status: :unprocessable_entity
+      return nil
     end
     puts "carga=",carga
     if !carga || !carga.count || carga.count < 1 || !carga[0] || 
