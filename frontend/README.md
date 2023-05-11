@@ -54,6 +54,9 @@ deployed or the development server.
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
         }
+
+        # Allow CORS requests
+        add_header Access-Control-Allow-Origin *;
     }
     ```
 
