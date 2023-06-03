@@ -22,7 +22,7 @@ What follows are the specific requeriments for this contract.
 This contract can perform operations that must be signed by the manager[^fn1].
 
 [^fn1] How we handled to produce signatures to test in FunC is explained in 
-  a comment we made at: 
+  a comment we made at:
   <https://github.com/ton-society/ton-footsteps/issues/129>
 
 
@@ -183,9 +183,9 @@ Cell with parameters is:
 32-bit seqno
 32-bit unsinged op equal to 1300
 Valid MsgAddress of seller with add
---- Nothing else if expiring an ad, in case of conflict the following also
+--- Nothing else if expiring an ad, in case of conflict the following also:
 Coins to give to seller
-Address of Buyer
+Address of Buyer to give rest of coins
 
 The possible erros it can throw are:
 
