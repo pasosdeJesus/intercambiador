@@ -2339,7 +2339,7 @@ PROGRAM{
         selling_ads SETGLOB	//  coins selleraddr adcoins success
         506 THROWIFNOT
         s1 s(-1) PUXC
-        x{416e756e63696f206578706972c3b3} PUSHSLICE	//  coins selleraddr selleraddr adcoins _229
+        x{416e756e63696f2063616e63656c61646f} PUSHSLICE	//  coins selleraddr selleraddr adcoins _229
         send_coins CALLDICT
       }>ELSE<{	//  coins selleraddr cs2 adcoins
         SWAP	//  coins selleraddr adcoins cs2
