@@ -1,0 +1,8 @@
+es:
+  attributes:
+  activerecord:
+    attributes:
+      "metodosdepago":
+        Metododepago: Método de pago
+        Metododepago: Métodos de pago
+
