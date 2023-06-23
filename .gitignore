@@ -27,3 +27,5 @@ backend-auth/tonproof
 ref
 frontend/dist/assets
 frontend/dist/vite.svg
+ref
+tmp
