@@ -12,9 +12,10 @@ import AdsContract from "./ads_contract";
 import * as AdsConstants from "./ads_constants"; 
 
 async function main() {
-  const endpoint = await getHttpEndpoint({ network: "testnet" });
+  const endpoint = await getHttpEndpoint({ network: AdsConstants.tonNetwork });
   console.log("endpoint=", endpoint);
   const client = new TonClient({ endpoint });
+  console.log("client=" + client);
 
   if (typeof process.env.ADSCONTRACT_ADDRESS == "undefined") {
     console.error("Must define ADSCONTRACT_ADDRESS");
@@ -22,8 +23,11 @@ async function main() {
   }
 
   const adsAddress = Address.parse(process.env.ADSCONTRACT_ADDRESS); 
+  console.log("adsAddress=" + adsAddress);
   const ads = new AdsContract(adsAddress);
+  console.log("ads=" + ads);
   const adsContract = client.open(ads);
+  console.log("adsContract=" + adsContract);
 
   // call the getters on chain
   const adsSeqno= await adsContract.getSeqno();

@@ -47,9 +47,9 @@ You can start it by `cp .env.plantilla .env` and fill with your values.
 
 In directory `func`, improve and add tests, ensuring that they run with 
 `make` (check instructions in `func/README.md`).
-After in directory `backend-smartcont` deploy to chain the smartcontract 
+After in directory `scripts` deploy to chain the smartcontract 
 configured with the environment variables and test it (check instrucions
-in `backed-smartcont/README.md`).
+in `scripts/README.md`).
 
 ### Run the backends and the frontend
 

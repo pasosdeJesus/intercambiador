@@ -11,32 +11,36 @@ import { TonClient } from "ton";
 async function main(argv:Array<string>) {
 
   if (argv.length != 3) {
-    console.error("Falta dirección como primer parámetro");
+    console.error("Falta número de anuncio como primer parámetro");
     process.exit(1);
   }
-  let direccion = argv[2];
+  let num = +argv[2];
 
   if (!AdsContract.validConfiguration()) {
     console.log("Configuration is not valid, improve ../.env");
     process.exit(1);
   }
 
-  const endpoint = await getHttpEndpoint({ network: AdsConstants.tonNetwork });
-  //console.log("endpoint=", endpoint);
+  const endpoint = await getHttpEndpoint({ network: AdsConstants.tonNetwork  });
   const client = new TonClient({ endpoint });
 
   const adsAddress = Address.parse(AdsConstants.adsContractAddress); 
   const ads = new AdsContract(adsAddress);
   const adsContract = client.open(ads);
 
-
-  const address = Address.parse(direccion); 
-  //console.log("address=", address);
   try {
-    const d = await adsContract.getSellingAd(address);
-    console.log({coins: d[0], valid_until: d[1]});
+    const anuncio = await adsContract.getNthSellingAd(num);
+    let direccion = anuncio[0].toString();
+    if (typeof anuncio[0] == "object") {
+      direccion = Address.normalize(anuncio[0]); //hash.toString("hex");
+    }
+    console.log(JSON.stringify({ anuncioventa: {
+      direccion:  direccion,
+      cantidad: Number(anuncio[1]),
+      valido_hasta: Number(anuncio[2])
+    }}))
   } catch(e) {
-    console.log("Possibly address doesn't have a selling ad");
+    console.log("Cannot get selling add number " + num);
   }
 }
 

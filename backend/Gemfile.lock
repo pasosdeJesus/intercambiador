@@ -1,8 +1,7 @@
-GIT
-  remote: https://gitlab.com/pasosdeJesus/msip.git
-  revision: 33de6cbcd00927ed0d81307708b3d2da3b737b90
+PATH
+  remote: /home/vtamara/comp/rails/msip
   specs:
-    msip (2.2.0.beta1)
+    msip (2.2.0.beta2)
       cancancan (~> 3)
       devise (~> 4)
       devise-i18n (~> 1)
@@ -328,4 +327,4 @@ RUBY VERSION
    ruby 3.2.0p0
 
 BUNDLED WITH
-   2.4.9
+   2.4.12

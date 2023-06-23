@@ -279,7 +279,7 @@ global cell payments_buying_ads;
       (int success) = selling_ads~dict_delete?(267, selleraddr);
       throw_unless(ERR_CANNOT_DELETE_AD, success);
 
-      send_coins(selleraddr, adcoins, "Anuncio cancelado");
+      send_coins(selleraddr, adcoins, "Anuncio cancelado por administrador");
     } else {
       ;; Resolving conflict
       int coinsseller = cs2~load_coins();
@@ -297,7 +297,9 @@ global cell payments_buying_ads;
     }
 
     save_data();
-    send_utilities(selleraddr, coins);
+    if (coins > 10000000) {
+      send_utilities(manager_address, coins - 10000000);
+    }
     return ();
   }
 

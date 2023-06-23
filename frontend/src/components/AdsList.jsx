@@ -35,6 +35,7 @@ export function AdsList () {
     );
   }
 
+
   let anuncios = Array(0);
   if (typeof data == 'object' && data != {} && (typeof data.map == "function")) {
     anuncios = data.map((anuncio) => (
@@ -42,7 +43,12 @@ export function AdsList () {
       ton={anuncio.ton} 
       floatingmargin={anuncio.margenflotante}
       lowerlimit={anuncio.limiteinferior}
-      user_id={anuncio.usuario_id} />
+      user_id={anuncio.usuario_id}
+      nombrecomercial={anuncio.nombrecomercial}
+      pesosporton={anuncio.pesosporton}
+      pesosporton_validez={anuncio.pesosporton_validez}
+      metodosdepago={anuncio.metodosdepago}
+      />
     ))
   }
 

@@ -4,7 +4,7 @@ class AnunciosventaController < ApplicationController
   def obtener_token_autorizacion
     if !request || !request.headers || !request.headers["Authorization"] ||
         request.headers["Authorization"][0..6] != "Bearer "
-      render json: {error: 'Falta encabezado con autoerización'}, 
+      render json: {error: 'Falta encabezado con autorización'},
                     status: :unprocessable_entity
       return nil
     end
@@ -25,7 +25,7 @@ class AnunciosventaController < ApplicationController
       render json: {error: "Firma vencida, cierre la conexión de la billetera "\
                     "vuelvala a establecer"}, status: :unprocessable_entity
       return nil
-    rescue e
+    rescue
       render json: {error: "No pudo descifrarse token"}, 
         status: :unprocessable_entity
       return nil
@@ -43,6 +43,7 @@ class AnunciosventaController < ApplicationController
   end
 
 
+
   # GET /anunciosventa
   # GET /anunciosventa.json
   def index
@@ -51,7 +52,16 @@ class AnunciosventaController < ApplicationController
     if direccion.nil?
       return
     end
+    ActualizaAnunciosventaJob.perform_later(Time.now())
     @anunciosventa = Anuncioventa.all
+    menserr = "".dup
+    @anunciosventa.each do |a|
+      if !a.actualiza_ultimopesoporton(menserr)
+        render json: {error: menserr}, status: :unprocessable_entity
+       return
+     end
+    end
+
     puts "*index. @anunciosventa.length=", @anunciosventa.length
   end
 
@@ -104,14 +114,18 @@ class AnunciosventaController < ApplicationController
       return
     end
     if Usuario.where(direccion: direccion).count == 0
+      mesnerr = "".dup
       t = Usuario.create(
         nusuario: "u" + direccion[2..5]+'..'+direccion[-8..-1],
         rol: Ability::ROLOPERADOR,
         encrypted_password: direccion[0..10],
         fechacreacion: Date.today,
-        email: direccion[0..5]+'..'+direccion[-8..-1]+"@ejemplo.com",
-        nombre: direccion[0..5]+'..'+direccion[-8..-1],
-        direccion: direccion
+        email: direccion[0..5] + '..' + direccion[-8..-1] + "@ejemplo.com",
+        nombre: direccion[0..5] + '..' + direccion[-8..-1],
+        direccion: direccion,
+        direccion_amigable: TonwebHelper.direccion_a_amigable(
+          direccion, menserr, true, true
+        )
       )
       if !t.save
         render json: {
@@ -120,6 +134,17 @@ class AnunciosventaController < ApplicationController
         return
       end
     end
+    cantidad_ton = request.params["cantidadTon"].to_f
+    margen_flotante = request.params["porcentaje"].to_f
+    limite_inferior = request.params["minTon"].to_f
+    maximo_tiempo = request.params["tiempoMaximo"].to_f
+    metodos_pago = ActiveRecord::Base.connection.quote(
+      request.params["metodosPago"])
+    referencia_para_pago = ActiveRecord::Base.connection.quote(
+      request.params["referenciaParaPago"])
+    nombre_referencia = ActiveRecord::Base.connection.quote(
+      request.params["nombreReferencia"])
+
     usuario = Usuario.where(direccion: direccion).take
     if Anuncioventa.where(usuario_id: usuario.id).count > 0
       render json: {
@@ -133,8 +158,49 @@ class AnunciosventaController < ApplicationController
       bocbase64 = res.match(/bocbase64: (.*)/)[1]
       puts "bocbase64=", bocbase64
       render json: "{\"bocbase64\": \"#{bocbase64}\"}", status: :ok
+      menserr = "".dup
+      ppt = ::Pesoporton::masreciente(menserr)
+      if ppt.nil?
+        render json: {
+          error: "No pudo establecerse tasa de cambio TON a Peso"
+        }, status: 409 
+        return
+      end
 
-      ActualizaAnunciosventaJob.perform_later(direccion, Time.now())
+      anun = Anuncioventa.create(
+        usuario_id: usuario.id,
+        ton: cantidad_ton,
+        margenflotante: margen_flotante,
+        limiteinferior: limite_inferior,
+        maximotiempo: maximo_tiempo,
+        referencia_para_pago: referencia_para_pago,
+        nombre_referencia: nombre_referencia,
+        ultimopesoporton_id: ppt.id
+      )
+      if !anun.valid?
+        debugger
+      end
+      anun.save
+      metodos_pago.split(",").each do |nm|
+        mp = Metododepago.where('LOWER(nombre)=LOWER(?)', nm).take
+        if mp
+          anun.metododepago_ids << mp.id
+          anun.save
+        else
+          puts "Método de pago desconocido: #{nm}"
+        end
+      end
+      if anun.metododepago_ids == []
+        mp = Metododepago.where(nombre: 'NEQUI').take
+        if mp
+          anun.metododepago_ids << mp.id
+          anun.save
+        else 
+          puts "No se encontró NEQUI como método de pago"
+        end
+      end
+
+      ActualizaAnunciosventaJob.perform_later(Time.now())
     else
       render json: {
         error: "No pudo prepararse mensaje para crear anuncio"

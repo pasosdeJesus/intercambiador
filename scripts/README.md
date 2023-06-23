@@ -12,7 +12,6 @@ To generate a cell in `ads_contract.cell` with the smart contract
 ```
 yarn cell
 ```
-
 ## Deploy Smart Contract
 
 To deploy that cell fill in .env the variables
@@ -31,7 +30,13 @@ yarn deploy
 Put the address generated in `../.env` in the variable `ADSCONTRACT_ADDRESS`
 
 
-## Tests onchain
+## Library for Javascript
+
+The files `ads_constants.ts` and `ads_contract.ts` are like a library
+in TypeScript to operate the FunC contract.
+
+
+## Tests the library onchain
 
 Run
 ```
@@ -39,7 +44,7 @@ yarn test
 ```
 This will call the getters of the contract onchain.
 
-To test adding add an ad as manager (with more than 5.6 TON in wallet) run:
+To test adding an ad as manager (with more than 5.6 TON in wallet) run:
 ```
 npx ts-node test_add_selling_ad
 ```
@@ -52,6 +57,6 @@ If you run `yarn test`  you should be able to see an ad from manager.
 ## Scripts
 
 | Script | What it does |
-| npx ts-node run_end_of_operation | Ends operation of contract returing coins and destroying contract |
+| npx ts-node end_of_operation | Ends operation of contract returing coins and destroying contract |
 | npx ts-node prepare_selling_ad | Backend uses this to generate a message signed by manager to create a selling ad with the right seqno |
 ```

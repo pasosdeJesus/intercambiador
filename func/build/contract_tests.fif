@@ -2131,17 +2131,17 @@ PROGRAM{
     s3 POP
     NIP	//  in_msg_body in_msg_full
     CTOS	//  in_msg_body fm
-    4 LDU	//  in_msg_body _417 _416
+    4 LDU	//  in_msg_body _422 _421
     NIP	//  in_msg_body fm
     LDMSGADDR	//  in_msg_body sender_address fm
-    LDMSGADDR	//  in_msg_body sender_address _421 _420
+    LDMSGADDR	//  in_msg_body sender_address _426 _425
     NIP	//  in_msg_body sender_address fm
-    LDVARUINT16	//  in_msg_body sender_address _423 _422
+    LDVARUINT16	//  in_msg_body sender_address _428 _427
     DROP	//  in_msg_body sender_address coins
     s0 s2 XCHG
     9 PUSHPOW2	//  coins sender_address in_msg_body _21=512
     LDSLICEX	//  coins sender_address signature in_msg_body
-    LDREF	//  coins sender_address signature _427 _426
+    LDREF	//  coins sender_address signature _432 _431
     DROP	//  coins sender_address signature body2
     CTOS	//  coins sender_address signature cs
     DUP	//  coins sender_address signature cs cs2
@@ -2179,7 +2179,7 @@ PROGRAM{
       s2 s(-1) PUXC
       267 PUSHINT	//  sender_address coins sender_address _63 _64=267
       DICTGET
-      NULLSWAPIFNOT	//  sender_address coins _432 _433
+      NULLSWAPIFNOT	//  sender_address coins _437 _438
       NIP	//  sender_address coins success
       -1 EQINT	//  sender_address coins _68
       1002 THROWIF
@@ -2226,7 +2226,7 @@ PROGRAM{
       SWAP	//  coins sender_address cs2 buyeraddr
       s0 DUMP	//  coins sender_address cs2 buyeraddr
       SWAP	//  coins sender_address buyeraddr cs2
-      LDVARUINT16	//  coins sender_address buyeraddr _439 _438
+      LDVARUINT16	//  coins sender_address buyeraddr _444 _443
       DROP	//  coins sender_address buyeraddr buyercoins
       selling_ads GETGLOB	//  coins sender_address buyeraddr buyercoins _117
       s3 s(-1) PUXC
@@ -2239,7 +2239,7 @@ PROGRAM{
       s0 DUMP	//  coins sender_address buyeraddr sd buyercoins
       SWAP	//  coins sender_address buyeraddr buyercoins sd
       LDVARUINT16	//  coins sender_address buyeraddr buyercoins adcoins sd
-      64 LDU	//  coins sender_address buyeraddr buyercoins adcoins _445 _444
+      64 LDU	//  coins sender_address buyeraddr buyercoins adcoins _450 _449
       DROP	//  coins sender_address buyeraddr buyercoins adcoins validuntil
       s0 DUMP	//  coins sender_address buyeraddr buyercoins adcoins _133
       DROP	//  coins sender_address buyeraddr buyercoins adcoins
@@ -2287,7 +2287,7 @@ PROGRAM{
       NULLSWAPIFNOT	//  coins sender_address sd success
       NOT	//  coins sender_address sd _169
       505 THROWIF
-      LDVARUINT16	//  coins sender_address _451 _450
+      LDVARUINT16	//  coins sender_address _456 _455
       DROP	//  coins sender_address adcoins
       s2 PUSH
       200000000 PUSHINT	//  coins sender_address adcoins coins _179=200000000
@@ -2324,7 +2324,7 @@ PROGRAM{
       NULLSWAPIFNOT	//  coins selleraddr cs2 sd success
       NOT	//  coins selleraddr cs2 sd _209
       505 THROWIF
-      LDVARUINT16	//  coins selleraddr cs2 _461 _460
+      LDVARUINT16	//  coins selleraddr cs2 _466 _465
       DROP	//  coins selleraddr cs2 adcoins
       OVER	//  coins selleraddr cs2 adcoins cs2
       SBITS	//  coins selleraddr cs2 adcoins _218
@@ -2338,13 +2338,12 @@ PROGRAM{
         SWAP	//  coins selleraddr adcoins _222 _226
         selling_ads SETGLOB	//  coins selleraddr adcoins success
         506 THROWIFNOT
-        s1 s(-1) PUXC
-        x{416e756e63696f2063616e63656c61646f} PUSHSLICE	//  coins selleraddr selleraddr adcoins _229
+        x{416e756e63696f2063616e63656c61646f20706f722061646d696e6973747261646f72} PUSHSLICE	//  coins selleraddr adcoins _229
         send_coins CALLDICT
       }>ELSE<{	//  coins selleraddr cs2 adcoins
         SWAP	//  coins selleraddr adcoins cs2
         LDVARUINT16	//  coins selleraddr adcoins coinsseller cs2
-        LDMSGADDR	//  coins selleraddr adcoins coinsseller _469 _468
+        LDMSGADDR	//  coins selleraddr adcoins coinsseller _474 _473
         DROP	//  coins selleraddr adcoins coinsseller buyeraddr
         s1 s2 PUSH2	//  coins selleraddr adcoins coinsseller buyeraddr coinsseller adcoins
         GREATER	//  coins selleraddr adcoins coinsseller buyeraddr _238
@@ -2356,46 +2355,55 @@ PROGRAM{
         SWAP	//  coins selleraddr adcoins coinsseller buyeraddr _241 _245
         selling_ads SETGLOB	//  coins selleraddr adcoins coinsseller buyeraddr success
         506 THROWIFNOT
-        s3 s1 PUSH2
-        x{5265746f726e61646f2074726173207265736f6c756369c3b36e} PUSHSLICE	//  coins selleraddr adcoins coinsseller buyeraddr selleraddr coinsseller _248
+        s3 s1 XCPU
+        x{5265746f726e61646f2074726173207265736f6c756369c3b36e} PUSHSLICE	//  coins buyeraddr adcoins coinsseller selleraddr coinsseller _248
         send_coins CALLDICT
-        s1 s2 PUSH2	//  coins selleraddr adcoins coinsseller buyeraddr coinsseller adcoins
-        LESS	//  coins selleraddr adcoins coinsseller buyeraddr _250
-        IF:<{	//  coins selleraddr adcoins coinsseller buyeraddr
-          -ROT	//  coins selleraddr buyeraddr adcoins coinsseller
-          SUB	//  coins selleraddr buyeraddr _251
-          x{50616761646f2074726173207265736f6c756369c3b36e} PUSHSLICE	//  coins selleraddr buyeraddr _251 _252
+        s0 s1 PUSH2	//  coins buyeraddr adcoins coinsseller coinsseller adcoins
+        LESS	//  coins buyeraddr adcoins coinsseller _250
+        IF:<{	//  coins buyeraddr adcoins coinsseller
+          SUB	//  coins buyeraddr _251
+          x{50616761646f2074726173207265736f6c756369c3b36e} PUSHSLICE	//  coins buyeraddr _251 _252
           send_coins CALLDICT
         }>ELSE<{
-          3 BLKDROP	//  coins selleraddr
+          3 BLKDROP	//  coins
         }>
       }>
       save_data INLINECALLDICT
-      SWAP	//  selleraddr coins
-      send_utilities CALLDICT
+      DUP
+      10000000 PUSHINT	//  coins coins _255=10000000
+      GREATER	//  coins _256
+      IF:<{	//  coins
+        x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  coins _257
+        SWAP
+        10000000 PUSHINT	//  _257 coins _258=10000000
+        SUB	//  _257 _259
+        send_utilities CALLDICT
+      }>ELSE<{
+        DROP	// 
+      }>
     }>	//  coins sender_address cs2 op
     NIP
     s2 POP	//  op sender_address
     OVER
-    3000 PUSHINT	//  op sender_address op _256=3000
-    EQUAL	//  op sender_address _257
+    3000 PUSHINT	//  op sender_address op _261=3000
+    EQUAL	//  op sender_address _262
     IFJMP:<{	//  op sender_address
       NIP	//  sender_address
-      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  sender_address _259
-      SDEQ	//  _260
+      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  sender_address _264
+      SDEQ	//  _265
       507 THROWIFNOT
       0 PUSHINT	//  sellers_coins=0
       DUP	//  sellers_coins=0 numop=0
       selling_ads GETGLOB	//  sellers_coins=0 numop=0 copy_sa
       UNTIL:<{
-        267 PUSHINT	//  sellers_coins numop copy_sa _272=267
+        267 PUSHINT	//  sellers_coins numop copy_sa _277=267
         DICTREMMIN
-        NULLSWAPIFNOT2	//  sellers_coins numop _475 _477 _476 _478
+        NULLSWAPIFNOT2	//  sellers_coins numop _480 _482 _481 _483
         NIP	//  sellers_coins numop copy_sa sd success
         DUP	//  sellers_coins numop copy_sa sd success success
         IF:<{	//  sellers_coins numop copy_sa sd success
           SWAP	//  sellers_coins numop copy_sa success sd
-          LDVARUINT16	//  sellers_coins numop copy_sa success _480 _479
+          LDVARUINT16	//  sellers_coins numop copy_sa success _485 _484
           DROP	//  sellers_coins numop copy_sa success adcoins
           s1 s4 XCHG	//  success numop copy_sa sellers_coins adcoins
           ADD	//  success numop copy_sa sellers_coins
@@ -2405,14 +2413,14 @@ PROGRAM{
         }>ELSE<{
           NIP	//  sellers_coins numop copy_sa success
         }>
-        NOT	//  sellers_coins numop copy_sa _280
+        NOT	//  sellers_coins numop copy_sa _285
       }>	//  sellers_coins numop copy_sa
       DROP	//  sellers_coins numop
       buying_ads GETGLOB	//  sellers_coins numop copy_ba
       UNTIL:<{
-        267 PUSHINT	//  sellers_coins numop copy_ba _287=267
+        267 PUSHINT	//  sellers_coins numop copy_ba _292=267
         DICTREMMIN
-        NULLSWAPIFNOT2	//  sellers_coins numop _484 _486 _485 _487
+        NULLSWAPIFNOT2	//  sellers_coins numop _489 _491 _490 _492
         2 1 BLKDROP2	//  sellers_coins numop copy_ba success
         DUP	//  sellers_coins numop copy_ba success success
         IF:<{	//  sellers_coins numop copy_ba success
@@ -2420,21 +2428,21 @@ PROGRAM{
           INC	//  sellers_coins success copy_ba numop
           s0 s2 XCHG	//  sellers_coins numop copy_ba success
         }>	//  sellers_coins numop copy_ba success
-        NOT	//  sellers_coins numop copy_ba _291
+        NOT	//  sellers_coins numop copy_ba _296
       }>	//  sellers_coins numop copy_ba
       DROP	//  sellers_coins numop
       payments_buying_ads GETGLOB	//  sellers_coins numop copy_pba
       UNTIL:<{
-        267 PUSHINT	//  sellers_coins numop copy_pba _298=267
+        267 PUSHINT	//  sellers_coins numop copy_pba _303=267
         DICTREMMIN
-        NULLSWAPIFNOT2	//  sellers_coins numop _491 _493 _492 _494
+        NULLSWAPIFNOT2	//  sellers_coins numop _496 _498 _497 _499
         NIP	//  sellers_coins numop copy_pba sd success
         DUP	//  sellers_coins numop copy_pba sd success success
         IF:<{	//  sellers_coins numop copy_pba sd success
           SWAP	//  sellers_coins numop copy_pba success sd
-          LDMSGADDR	//  sellers_coins numop copy_pba success _496 _495
+          LDMSGADDR	//  sellers_coins numop copy_pba success _501 _500
           NIP	//  sellers_coins numop copy_pba success sd
-          LDVARUINT16	//  sellers_coins numop copy_pba success _498 _497
+          LDVARUINT16	//  sellers_coins numop copy_pba success _503 _502
           DROP	//  sellers_coins numop copy_pba success pcoins
           s1 s4 XCHG	//  success numop copy_pba sellers_coins pcoins
           ADD	//  success numop copy_pba sellers_coins
@@ -2444,100 +2452,100 @@ PROGRAM{
         }>ELSE<{
           NIP	//  sellers_coins numop copy_pba success
         }>
-        NOT	//  sellers_coins numop copy_pba _309
+        NOT	//  sellers_coins numop copy_pba _314
       }>	//  sellers_coins numop copy_pba
       DROP	//  sellers_coins numop
-      BALANCE	//  sellers_coins numop _312
-      UNPAIR	//  sellers_coins numop _499 _500
+      BALANCE	//  sellers_coins numop _317
+      UNPAIR	//  sellers_coins numop _504 _505
       DROP	//  sellers_coins numop balance
       ROT	//  numop balance sellers_coins
-      SUB	//  numop _315
+      SUB	//  numop _320
       SWAP
-      100000000 PUSHINT	//  _315 numop _316=100000000
-      MUL	//  _315 _317
+      100000000 PUSHINT	//  _320 numop _321=100000000
+      MUL	//  _320 _322
       SUB	//  utility
-      3001 PUSHINT	//  utility _319=3001
-      OVER	//  utility _319=3001 utility
-      0 LESSINT	//  utility _319=3001 _321
+      3001 PUSHINT	//  utility _324=3001
+      OVER	//  utility _324=3001 utility
+      0 LESSINT	//  utility _324=3001 _326
       THROWANYIF
       save_data INLINECALLDICT
-      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  utility _324
-      SWAP	//  _324 utility
+      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  utility _329
+      SWAP	//  _329 utility
       send_utilities CALLDICT
     }>	//  op sender_address
     SWAP
-    4000 PUSHINT	//  sender_address op _326=4000
-    EQUAL	//  sender_address _327
+    4000 PUSHINT	//  sender_address op _331=4000
+    EQUAL	//  sender_address _332
     IFJMP:<{	//  sender_address
-      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  sender_address _329
-      SDEQ	//  _330
+      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  sender_address _334
+      SDEQ	//  _335
       507 THROWIFNOT
       UNTIL:<{
-        selling_ads GETGLOB	//  _336
-        267 PUSHINT	//  _336 _337=267
+        selling_ads GETGLOB	//  _341
+        267 PUSHINT	//  _341 _342=267
         DICTREMMIN
-        NULLSWAPIFNOT2	//  _339 _502 _501 _503
-        s0 s3 XCHG	//  _503 _502 _501 _339
+        NULLSWAPIFNOT2	//  _344 _507 _506 _508
+        s0 s3 XCHG	//  _508 _507 _506 _344
         selling_ads SETGLOB	//  success sd address
         s2 PUSH	//  success sd address success
         IF:<{	//  success sd address
           SWAP	//  success address sd
-          LDVARUINT16	//  success address _509 _508
+          LDVARUINT16	//  success address _514 _513
           DROP	//  success address mcoins
-          x{416e756e63696f2063616e63656c61646f20706f722066696e206465206f706572616369c3b36e} PUSHSLICE	//  success address mcoins _347
+          x{416e756e63696f2063616e63656c61646f20706f722066696e206465206f706572616369c3b36e} PUSHSLICE	//  success address mcoins _352
           send_coins CALLDICT
         }>ELSE<{
           2DROP	//  success
         }>
-        NOT	//  _349
+        NOT	//  _354
       }>	// 
       UNTIL:<{
-        buying_ads GETGLOB	//  _354
-        267 PUSHINT	//  _354 _355=267
+        buying_ads GETGLOB	//  _359
+        267 PUSHINT	//  _359 _360=267
         DICTREMMIN
-        NULLSWAPIFNOT2	//  _515 _517 _516 _518
-        2 1 BLKDROP2	//  _357 _514
-        SWAP	//  _514 _357
+        NULLSWAPIFNOT2	//  _520 _522 _521 _523
+        2 1 BLKDROP2	//  _362 _519
+        SWAP	//  _519 _362
         buying_ads SETGLOB	//  success
-        NOT	//  _358
+        NOT	//  _363
       }>	// 
       UNTIL:<{
-        payments_buying_ads GETGLOB	//  _363
-        267 PUSHINT	//  _363 _364=267
+        payments_buying_ads GETGLOB	//  _368
+        267 PUSHINT	//  _368 _369=267
         DICTREMMIN
-        NULLSWAPIFNOT2	//  _522 _524 _523 _525
-        NIP	//  _366 _520 _521
-        s0 s2 XCHG	//  _521 _520 _366
+        NULLSWAPIFNOT2	//  _527 _529 _528 _530
+        NIP	//  _371 _525 _526
+        s0 s2 XCHG	//  _526 _525 _371
         payments_buying_ads SETGLOB	//  success sd
         OVER	//  success sd success
         IF:<{	//  success sd
           LDMSGADDR	//  success payeer sd
-          LDVARUINT16	//  success payeer _529 _528
+          LDVARUINT16	//  success payeer _534 _533
           DROP	//  success payeer pcoins
-          x{5061676f207265746f726e61646f20706f722066696e206465206f706572616369c3b36e} PUSHSLICE	//  success payeer pcoins _377
+          x{5061676f207265746f726e61646f20706f722066696e206465206f706572616369c3b36e} PUSHSLICE	//  success payeer pcoins _382
           send_coins CALLDICT
         }>ELSE<{
           DROP	//  success
         }>
-        NOT	//  _379
+        NOT	//  _384
       }>	// 
       save_data INLINECALLDICT
-      BALANCE	//  _383
-      UNPAIR	//  _532 _533
+      BALANCE	//  _388
+      UNPAIR	//  _537 _538
       DROP	//  balance
-      0 PUSHINT	//  balance _386=0
-      16 PUSHINT	//  balance _386=0 _387=16
-      NEWC	//  balance _386=0 _387=16 _388
-      6 STU	//  balance _386=0 _390
-      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  balance _386=0 _390 _391
-      STSLICER	//  balance _386=0 _392
-      ROT	//  _386=0 _392 balance
-      STVARUINT16	//  _386=0 _393
-      107 STU	//  _407
-      x{46696e206465206f706572616369c3b36e} PUSHSLICE	//  _407 _408
-      STSLICER	//  _409
+      0 PUSHINT	//  balance _391=0
+      16 PUSHINT	//  balance _391=0 _392=16
+      NEWC	//  balance _391=0 _392=16 _393
+      6 STU	//  balance _391=0 _395
+      x{800E1B352B01520AA93365D882AFBB35232EBE554A71779752029D4F963F177F55D_} PUSHSLICE	//  balance _391=0 _395 _396
+      STSLICER	//  balance _391=0 _397
+      ROT	//  _391=0 _397 balance
+      STVARUINT16	//  _391=0 _398
+      107 STU	//  _412
+      x{46696e206465206f706572616369c3b36e} PUSHSLICE	//  _412 _413
+      STSLICER	//  _414
       ENDC	//  msgmanager
-      160 PUSHINT	//  msgmanager _411=160
+      160 PUSHINT	//  msgmanager _416=160
       SENDRAWMSG
     }>	//  sender_address
     DROP	// 

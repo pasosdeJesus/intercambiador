@@ -10,12 +10,6 @@ import { TonClient } from "ton";
 
 async function main(argv:Array<string>) {
 
-  if (argv.length != 3) {
-    console.error("Falta dirección como primer parámetro");
-    process.exit(1);
-  }
-  let direccion = argv[2];
-
   if (!AdsContract.validConfiguration()) {
     console.log("Configuration is not valid, improve ../.env");
     process.exit(1);
@@ -29,14 +23,11 @@ async function main(argv:Array<string>) {
   const ads = new AdsContract(adsAddress);
   const adsContract = client.open(ads);
 
-
-  const address = Address.parse(direccion); 
-  //console.log("address=", address);
   try {
-    const d = await adsContract.getSellingAd(address);
-    console.log({coins: d[0], valid_until: d[1]});
+    const n = await adsContract.getAmountSellingAds();
+    console.log({amount: Number(n)});
   } catch(e) {
-    console.log("Possibly address doesn't have a selling ad");
+    console.log("Cannot get amount of selling ads");
   }
 }
 

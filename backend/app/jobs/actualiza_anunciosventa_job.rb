@@ -4,41 +4,55 @@ class ActualizaAnunciosventaJob < ApplicationJob
   # Espera varios segundos examinando el listado de anuncios de venta
   # revisando si en base de datos debe agregarse uno para la dirección
   # que recibe
-  def perform(direccion, horainicial)
-    #puts "Esperar varios segundos revisando en blockchain si hay nuevo anuncio para #{direccion} y en tal caso agregarlo a base de datos"
+  def perform(horainicial)
+    # puts "Esperar varios segundos revisando en blockchain si hay nuevo 
+    # anuncio para #{direccion} y en tal caso agregarlo a base de datos"
 
-    res = `(cd ../scripts; npx ts-node get_selling_ad #{direccion})`
-    puts res
-    coins = res.match(/{ coins: (.*), valid_until: (.*) }/)[1]
-    valid_until = res.match(/{ coins: (.*), valid_until: (.*) }/)[2]
-    if (coins && valid_until)
-      # Agregar a base de datos
-      usuario = Usuario.where(direccion: direccion).take
-      if !usuario
-        puts "Problema, no se encontró usuario con dirección #{direccion}"
-        return
-      end
-      if Anuncioventa.where(usuario_id: usuario.id).count > 0
-        puts "Problema, usuario #{usuario.id} ya tiene anuncio";
-        return
-      end
-      a = Anuncioventa.create(
-        ton: coins,
-        margenflotante: 104,
-        limiteinferior: 5.2,
-        maximotiempo: 15,
-        usuario_id: usuario.id
-      )
-      if !a.save
-        puts "Problema, no pudo crear anuncio";
-        puts a.errors.messages
-        return
-      end
-    else
-      if Time.now()-horainicial < 10
-        sleep(1)
-        ActualizaAnunciosventaJob.perform_later(direccion, horainicial)
+    res = `(cd ../scripts; npx ts-node get_amount_selling_ads)`
+    puts "res=#{res}"
+    m = res.match(/{ amount: (.*) }/)
+    if !m
+      return
+    end
+    total = $1.to_i
+    ids = []
+    (1..total).each do |i|
+      res = `(cd ../scripts; npx ts-node get_nth_selling_ad #{i-1})`
+      puts "res=#{res}"
+      m2 = res.match(/^{/)
+      if m2
+        rm = JSON.parse(res)
+        if rm['anuncioventa'] && rm['anuncioventa'].class==Hash 
+          direccion = rm['anuncioventa']['direccion']
+          cantidad = rm['anuncioventa']['cantidad']
+          valido_hasta = rm['anuncioventa']['valido_hasta']
+          usuario = Usuario.where(direccion_amigable: direccion).take
+          if usuario.nil?
+            puts "Hay un anuncio no creado con esta plataforma de la dirección #{direccion}. No se presenta"
+          elsif (cantidad && valido_hasta)
+            debugger
+            # Completar en base de datos
+            posan = Anuncioventa.where(usuario_id: usuario.id)
+            if posan.count != 1
+              puts "Usuario #{usuario.id} tiene #{posan.count} anuncios";
+            else 
+              a = posan.take
+              ids << a.id
+              a.ton = cantidad
+              if !a.save
+                puts "Problema, no pudo guardar anuncio";
+                puts a.errors.messages
+                return
+              end
+            end
+          end
+        end
       end
     end
+    # Se elminan los que no estén en el blockchain
+    if ids.length > 0
+      Anuncioventa.where('id NOT in (?)', ids.join(',')).destroy_all
+    end
   end
+
 end

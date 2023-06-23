@@ -18,7 +18,7 @@ export const managerAddress =
   typeof process != "undefined" && 
   typeof process.env.MANAGER_ADDRESS != "undefined" ?
   process.env.MANAGER_ADDRESS :
-  "EQBw2alYCpBVSZsuxBV92akZdfKqU4u8upAU6nyx-Lv6rh81";
+  "EQDXnq8N5G6dLWMUfakrllwIDGp0Z5AWzDhyubyOjQC8NM7I";
 
 export const managerPublicKey = 
   typeof process != "undefined" && 
@@ -38,8 +38,8 @@ export const fundPercentage =
   +process.env.FUND_PERCENTAGE : 10;
 
 export const adsContractAddress = 
-  typeof process != "undefined" && 
-  typeof process.env.ADSCONTRACT_ADDRESS != "undefined" ?
+  (typeof process != "undefined" && 
+  typeof process.env.ADSCONTRACT_ADDRESS != "undefined") ?
   process.env.ADSCONTRACT_ADDRESS :
   "EQDpN8C7zvujgd2jS3ppZAriy7HVURqWgPaqCo_ohfFmgifh";
 
@@ -52,8 +52,8 @@ export const intercambiadorDomain =
 export const portAuthBackendTls = 
   typeof process != "undefined" && 
   typeof process.env.PORT_AUTHBACKEND_TLS != "undefined" ?
-  +process.env.PORT_AUTHBACKEND_TLS : 
-  4443;
+  process.env.PORT_AUTHBACKEND_TLS :
+  "4443";
 
 export const authBackend = 
   `https://${intercambiadorDomain}:${portAuthBackendTls}`
@@ -61,8 +61,8 @@ export const authBackend =
 export const portDbBackendTls = 
   typeof process != "undefined" && 
   typeof process.env.PORT_DBBACKEND_TLS != "undefined" ?
-  +process.env.PORT_DBBACKEND_TLS : 
-  3443;
+  process.env.PORT_DBBACKEND_TLS : 
+  "3443";
 
 export const dbBackend = 
   `https://${intercambiadorDomain}:${portDbBackendTls}`
@@ -88,4 +88,4 @@ export const opManagerCancelsBuyingAd          = 2300;
 export const opManagerDistributesUtility       = 3000;
 export const opManagerEndsOperation            = 4000;
 
-export const backendHost = "https://intercambiador.pasosdeJesus:4443"
+export const backendHost = "https://intercambiadordev.pasosdeJesus:4443"

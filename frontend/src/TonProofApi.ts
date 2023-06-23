@@ -105,30 +105,29 @@ class TonProofApiService {
     return response as {}; 
   }
 
-  async getSellingAdMsg(account: Account) {
-    console.log('** TonProofApi getSellingAdMsg', account);
+  async getSellingAdMsg(
+    account: Account, tonAmount: number, tonMin: number, percentage: number,
+    maxTime: number, paymentMethods: Array<string>
+  ) {
+    console.log("** TonProofApi getSellingAdMsg. account=", account, 
+                ", tonAmount=", tonAmount,
+                ", tonMin=", tonMin,
+                ", percentage=", percentage,
+                ", maxTime=", maxTime,
+                ", paymentMethods=", paymentMethods
+               );
     const response = await (
-      await fetch(`${AdsConstants.dbBackend}/anuncioventa_preparar.json`, {
+      await fetch(`${AdsConstants.dbBackend}/anuncioventa_preparar.json?` +
+                  `cantidadTon=${tonAmount}&` +
+                  `minTon=${tonMin}&` +
+                  `porcentaje=${percentage}&` +
+                  `tiempoMaximo=${maxTime}&` +
+                  `metodosPago=${paymentMethods}`, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
       })
-      .then(async response => {
-          const isJson = response.headers.get('content-type')?.includes('application/json');
-          const data = isJson ? await response.json() : null;
-
-          // check for error response
-          if (!response.ok) {
-            // get error message from body or default to response status
-            const error = (data && data.error) || response.status;
-            return Promise.reject(error);
-          }
-        })
-        .catch(error => {
-          alert('Error: ' + error);
-          console.error('There was an error!', error);
-        })
     ).json();
 
     return response as {}; 

@@ -27,8 +27,8 @@ export default function App() {
           <AddAd />
         </main>
         <footer>
-          <TonProofDemo />
         </footer>
       </div>
   );
+          //<TonProofDemo />
 }

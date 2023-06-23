@@ -22,6 +22,13 @@ PRUEBA_ANUNCIO = {
 }
 
 
+PRUEBA_PESOPORTON = {
+  valor: "10",
+  desde: "2023-05-19 12:00",
+  hasta: "2023-05-19 12:05"
+}
+
+
 PRUEBA_USUARIO = {
   nusuario: "juan_perez",
   password: "sjrven123",

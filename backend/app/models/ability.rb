@@ -49,6 +49,7 @@ class Ability  < Msip::Ability
         can :manage, Msip::Persona
         can :manage, Msip::Respaldo7z
         can :manage, Msip::Ubicacion
+        can :manage, ::Pesoporton
         can :manage, ::Usuario
         can :manage, :tablasbasicas
         self.tablasbasicas.each do |t|

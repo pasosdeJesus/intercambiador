@@ -103,8 +103,41 @@ export default class AdsContract implements Contract {
     return messageBody;
   }
 
+  static async prepareManagerCancelsSellingAd(address: Address) {
+    const manKeypair = await mnemonicToWalletKey(
+      AdsConstants.managerSecret24.split(" ")
+    );
 
-  async prepareEndOfOperation() {
+    const adsAddress = Address.parse(AdsConstants.adsContractAddress);
+    const ads = new AdsContract(adsAddress);
+    const endpoint = await getHttpEndpoint(
+      { network:  AdsConstants.tonNetwork }
+    );
+    const client = new TonClient({ endpoint });
+    const adsContract = client.open(ads);
+
+    const adsSeqno= await adsContract.getSeqno();
+
+    const bodyToSign = beginCell()
+      .storeUint(adsSeqno, 32)
+      .storeUint(AdsConstants.opManagerCancelsSellingAd, 32)
+      .storeAddress(address)
+      .endCell();
+
+    const hash = bodyToSign.hash();
+
+    const signature = sign(hash, manKeypair.secretKey);
+
+    const messageBody = beginCell()
+    .storeBuffer(signature)
+    .storeRef(bodyToSign)
+    .endCell();
+
+    return messageBody;
+  }
+
+
+  static async prepareEndOfOperation() {
     const manKeypair = await mnemonicToWalletKey(
       AdsConstants.managerSecret24.split(" ")
     );
@@ -197,7 +230,9 @@ export default class AdsContract implements Contract {
   }
 
   async getNthSellingAd(provider: ContractProvider, nt: number) {
-    const { stack } = await provider.get("get_nth_selling_ad", [{ type: 'int', value: BigInt(nt) }]);
+    const { stack } = await provider.get(
+      "get_nth_selling_ad", [{ type: 'int', value: BigInt(nt) }]
+    );
     return [stack.readAddress(), stack.readBigNumber(), stack.readBigNumber()];
   }
 
