@@ -53,7 +53,7 @@ class AnunciosventaController < ApplicationController
       return
     end
     ActualizaAnunciosventaJob.perform_later(Time.now())
-    @anunciosventa = Anuncioventa.all
+    @anunciosventa = Anuncioventa.all.where(enblockchain: true)
     menserr = "".dup
     @anunciosventa.each do |a|
       if !a.actualiza_ultimopesoporton(menserr)
@@ -114,7 +114,7 @@ class AnunciosventaController < ApplicationController
       return
     end
     if Usuario.where(direccion: direccion).count == 0
-      mesnerr = "".dup
+      menserr = "".dup
       t = Usuario.create(
         nusuario: "u" + direccion[2..5]+'..'+direccion[-8..-1],
         rol: Ability::ROLOPERADOR,

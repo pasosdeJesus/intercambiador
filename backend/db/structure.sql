@@ -225,7 +225,8 @@ CREATE TABLE public.anuncioventa (
     nombrecomercial character varying(255),
     ultimopesoporton_id integer,
     referencia_para_pago character varying(64),
-    nombre_referencia character varying(255)
+    nombre_referencia character varying(255),
+    enblockchain boolean DEFAULT false
 );
 
 
@@ -2882,6 +2883,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230515113923'),
 ('20230515141753'),
 ('20230605152216'),
-('20230607224228');
+('20230607224228'),
+('20230624120450');
 
 

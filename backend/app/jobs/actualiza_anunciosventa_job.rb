@@ -30,7 +30,6 @@ class ActualizaAnunciosventaJob < ApplicationJob
           if usuario.nil?
             puts "Hay un anuncio no creado con esta plataforma de la dirección #{direccion}. No se presenta"
           elsif (cantidad && valido_hasta)
-            debugger
             # Completar en base de datos
             posan = Anuncioventa.where(usuario_id: usuario.id)
             if posan.count != 1
@@ -39,6 +38,7 @@ class ActualizaAnunciosventaJob < ApplicationJob
               a = posan.take
               ids << a.id
               a.ton = cantidad
+              a.enblockchain = true
               if !a.save
                 puts "Problema, no pudo guardar anuncio";
                 puts a.errors.messages
@@ -49,10 +49,19 @@ class ActualizaAnunciosventaJob < ApplicationJob
         end
       end
     end
-    # Se elminan los que no estén en el blockchain
-    if ids.length > 0
-      Anuncioventa.where('id NOT in (?)', ids.join(',')).destroy_all
+    # Se eliminan los que no estén en el blockchain (excepto muy nuevos)
+    if ids.length == 0
+      revisar = Anuncioventa.all
+    elsif ids.length > 0
+      revisar = Anuncioventa.where('id NOT in (?)', ids.join(','))
     end
+    revisar.each do |pd|
+      tcre = Time.now - pd.created_at
+      if tcre > 300 # Más de 5 minuts
+        pd.destroy
+      end
+    end
+
   end
 
 end
