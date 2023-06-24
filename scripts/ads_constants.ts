@@ -41,7 +41,7 @@ export const adsContractAddress =
   (typeof process != "undefined" && 
   typeof process.env.ADSCONTRACT_ADDRESS != "undefined") ?
   process.env.ADSCONTRACT_ADDRESS :
-  "EQDpN8C7zvujgd2jS3ppZAriy7HVURqWgPaqCo_ohfFmgifh";
+  "EQDXnq8N5G6dLWMUfakrllwIDGp0Z5AWzDhyubyOjQC8NM7I";
 
 export const intercambiadorDomain = 
   typeof process != "undefined" && 
