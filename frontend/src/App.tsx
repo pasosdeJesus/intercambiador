@@ -5,7 +5,8 @@ import { connector } from './connector';
 import { TonProofDemo } from './components/TonProofDemo/TonProofDemo'; 
 import { AdsList } from "./components/AdsList";
 import { AddAd } from "./components/AddAd";
-
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
 
 export default function App() {
 
@@ -23,8 +24,18 @@ export default function App() {
           </div>
         </header>
         <main>
-          <AdsList />
-          <AddAd />
+          <Tabs>
+            <TabList>
+              <Tab>Anuncios de venta</Tab>
+              <Tab>Crear anuncio de venta</Tab>
+            </TabList>
+            <TabPanel>
+              <AdsList />
+            </TabPanel>
+            <TabPanel>
+              <AddAd />
+            </TabPanel>
+          </Tabs>
         </main>
         <footer>
         </footer>

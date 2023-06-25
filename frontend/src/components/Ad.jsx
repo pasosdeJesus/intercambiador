@@ -15,7 +15,7 @@ export function Ad(props) {
       <div className="c-cb">
         <div>{ppt}</div>
         <hr/>
-        <div style={{display: "flex", "justify-content": "space-between"}}>
+        <div style={{display: "flex", justifyContent: "space-between"}}>
           <div>{props.nombrecomercial}</div>
         </div>
         <div>Límites: {lmin} a {lmax}</div>

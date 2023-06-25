@@ -19,6 +19,7 @@
     "react-json-view": "^1.21.3",
     "react-qr-code": "^2.0.11",
     "react-query": "^3.39.3",
+    "react-tabs": "^6.0.1",
     "recoil": "^0.7.7",
     "tonweb": "^0.0.60",
     "vite-plugin-node-polyfills": "^0.7.0"
