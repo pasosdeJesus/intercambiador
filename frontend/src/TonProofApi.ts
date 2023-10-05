@@ -44,6 +44,17 @@ class TonProofApiService {
       await fetch(`${AdsConstants.authBackend}/ton-proof/generatePayload`, {
         method: 'POST',
       })
+      .then(response => {
+        if (!response.ok) {
+          alert(response);
+          return Promise.reject(response);
+        }
+        return response;
+      })
+      .then(data => {
+        console.log("Success");
+        return data;
+      })
     ).json();
 
     return response.payload as string;
@@ -66,6 +77,17 @@ class TonProofApiService {
           method: 'POST',
           body: JSON.stringify(reqBody),
         })
+        .then(response => {
+          if (!response.ok) {
+            alert(response);
+            return Promise.reject(response);
+          }
+          return response;
+        })
+        .then(data => {
+          console.log("Success");
+          return data;
+        })
       ).json();
 
       if (response?.token) {
@@ -86,6 +108,17 @@ class TonProofApiService {
           'Content-Type': 'application/json',
         },
       })
+      .then(response => {
+        if (!response.ok) {
+          alert(response);
+          return Promise.reject(response);
+        }
+        return response;
+      })
+      .then(data => {
+        console.log("Success");
+        return data;
+      })
     ).json();
 
     return response as {};
@@ -100,6 +133,18 @@ class TonProofApiService {
           'Content-Type': 'application/json',
         },
       })
+      .then(response => {
+        if (!response.ok) {
+          alert(response);
+          return Promise.reject(response);
+        }
+        return response;
+      })
+      .then(data => {
+        console.log("Success");
+        return data;
+      })
+
     ).json();
 
     return response as {}; 
@@ -107,14 +152,18 @@ class TonProofApiService {
 
   async getSellingAdMsg(
     account: Account, tonAmount: number, tonMin: number, percentage: number,
-    maxTime: number, paymentMethods: Array<string>
+    maxTime: number, paymentMethods: Array<string>,
+    commerceName: string, referenceForPayment: string, nameForPayment: string
   ) {
     console.log("** TonProofApi getSellingAdMsg. account=", account, 
                 ", tonAmount=", tonAmount,
                 ", tonMin=", tonMin,
                 ", percentage=", percentage,
                 ", maxTime=", maxTime,
-                ", paymentMethods=", paymentMethods
+                ", paymentMethods=", paymentMethods,
+                ", commerceName=", commerceName,
+                ", referenceForPayment=", referenceForPayment,
+                ", nameForPayment=", nameForPayment
                );
     const response = await (
       await fetch(`${AdsConstants.dbBackend}/anuncioventa_preparar.json?` +
@@ -122,11 +171,26 @@ class TonProofApiService {
                   `minTon=${tonMin}&` +
                   `porcentaje=${percentage}&` +
                   `tiempoMaximo=${maxTime}&` +
-                  `metodosPago=${paymentMethods}`, {
+                  `metodosPago=${paymentMethods}&` +
+                  `commerceName=${commerceName}&` + 
+                  `referenceForPayment=${referenceForPayment}&` +
+                  `nameForPayment=${nameForPayment}`
+                  , {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
+      })
+      .then(response => {
+        if (!response.ok) {
+          alert(response);
+          return Promise.reject(response);
+        }
+        return response;
+      })
+      .then(data => {
+        console.log("Success");
+        return data;
       })
     ).json();
 

@@ -24,15 +24,15 @@ export default function App() {
           </div>
         </header>
         <main>
-          <Tabs>
+          <Tabs forceRenderTabPanel={true}>
             <TabList>
-              <Tab>Anuncios de venta</Tab>
-              <Tab>Crear anuncio de venta</Tab>
+              <Tab key="tab-anunciosventa">Anuncios de venta</Tab>
+              <Tab key="tab-crear-anuncioventa">Crear anuncio de venta</Tab>
             </TabList>
-            <TabPanel>
+            <TabPanel key="tab-panel-anunciosventa">
               <AdsList />
             </TabPanel>
-            <TabPanel>
+            <TabPanel key="tab-panel-crear-anuncioventa">
               <AddAd />
             </TabPanel>
           </Tabs>
