@@ -4,11 +4,20 @@ class AnunciosventaController < ApplicationController
   def obtener_token_autorizacion
     if !request || !request.headers || !request.headers["Authorization"] ||
         request.headers["Authorization"][0..6] != "Bearer "
-      render json: {error: 'Falta encabezado con autorización'},
+      mens = 'Falta encabezado con autorización'
+      render json: {error: mens},
                     status: :unprocessable_entity
+      STDERR.puts mens
       return nil
     end
     token = request.headers["Authorization"][7..-1]
+    if token == "null"
+      mens = 'Autorización no puede ser null'
+      render json: {error: mens},
+                    status: :unprocessable_entity
+      STDERR.puts mens
+      return nil
+    end
     hmac_secret = ENV.fetch('HS256_SECRET')
     # Aquí ruby tiene bien Time.now.to_i igual al tiempo UTC presentado por
     # https://www.epochconverter.com/
@@ -134,12 +143,15 @@ class AnunciosventaController < ApplicationController
         return
       end
     end
+    puts request.params
     cantidad_ton = request.params["cantidadTon"].to_f
     margen_flotante = request.params["porcentaje"].to_f
     limite_inferior = request.params["minTon"].to_f
     maximo_tiempo = request.params["tiempoMaximo"].to_f
     metodos_pago = ActiveRecord::Base.connection.quote(
       request.params["metodosPago"])
+    nombre_comercial = ActiveRecord::Base.connection.quote(
+      request.params["nombreComercial"])
     referencia_para_pago = ActiveRecord::Base.connection.quote(
       request.params["referenciaParaPago"])
     nombre_referencia = ActiveRecord::Base.connection.quote(
@@ -147,9 +159,9 @@ class AnunciosventaController < ApplicationController
 
     usuario = Usuario.where(direccion: direccion).take
     if Anuncioventa.where(usuario_id: usuario.id).count > 0
-      render json: {
-        error: "El usuario ya tienen un anuncio"
-      }, status: 409 # conflict
+      mens = "El usuario ya tienen un anuncio"
+      render json: { error: mens }, status: 409 # conflict
+      STDERR.puts "*** " + mens
       return
     end
     # Estilo interactor de punk-city 
@@ -167,14 +179,21 @@ class AnunciosventaController < ApplicationController
         return
       end
 
+      usuario.nombrecomercial = nombre_comercial
+
+      referencia_para_pago = ActiveRecord::Base.connection.quote(
+        request.params["referenciaParaPago"])
+      nombre_referencia = ActiveRecord::Base.connection.quote(
+        request.params["nombreReferencia"])
+
+      usuario.nombrecomercial = nombre_comercial
+      comision_poner_anuncio = ENV.fetch('COMISION_PONER_ANUNCIO', '0.2').to_f
       anun = Anuncioventa.create(
         usuario_id: usuario.id,
-        ton: cantidad_ton,
+        ton: cantidad_ton - comision_poner_anuncio,
         margenflotante: margen_flotante,
         limiteinferior: limite_inferior,
         maximotiempo: maximo_tiempo,
-        referencia_para_pago: referencia_para_pago,
-        nombre_referencia: nombre_referencia,
         ultimopesoporton_id: ppt.id
       )
       if !anun.valid?
@@ -184,8 +203,8 @@ class AnunciosventaController < ApplicationController
       metodos_pago.split(",").each do |nm|
         mp = Metododepago.where('LOWER(nombre)=LOWER(?)', nm).take
         if mp
-          anun.metododepago_ids << mp.id
-          anun.save
+          AnunciosHelper::agrega_metododepago(
+            mp, anun, usuario, referencia_para_pago, nombre_referencia)
         else
           puts "Método de pago desconocido: #{nm}"
         end
@@ -193,8 +212,8 @@ class AnunciosventaController < ApplicationController
       if anun.metododepago_ids == []
         mp = Metododepago.where(nombre: 'NEQUI').take
         if mp
-          anun.metododepago_ids << mp.id
-          anun.save
+          AnunciosHelper::agrega_metododepago(
+            mp, anun, usuario, referencia_para_pago, nombre_referencia)
         else 
           puts "No se encontró NEQUI como método de pago"
         end

@@ -58,12 +58,89 @@ CREATE FUNCTION public.f_unaccent(text) RETURNS text
 
 
 --
+-- Name: msip_agregar_o_remplazar_familiar_inverso(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.msip_agregar_o_remplazar_familiar_inverso() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      DECLARE
+        num2 INTEGER;
+        rinv CHAR(2);
+        rexistente CHAR(2);
+      BEGIN
+        ASSERT(TG_OP = 'INSERT' OR TG_OP = 'UPDATE');
+        RAISE NOTICE 'Insertando o actualizando en msip_persona_trelacion';
+        RAISE NOTICE 'TG_OP = %', TG_OP;
+        RAISE NOTICE 'NEW.id = %', NEW.id;
+        RAISE NOTICE 'NEW.persona1 = %', NEW.persona1;
+        RAISE NOTICE 'NEW.persona2 = %', NEW.persona2;
+        RAISE NOTICE 'NEW.trelacion_id = %', NEW.trelacion_id;
+        RAISE NOTICE 'NEW.observaciones = %', NEW.observaciones;
+
+        SELECT COUNT(*) INTO num2 FROM msip_persona_trelacion
+          WHERE persona1 = NEW.persona2 AND persona2=NEW.persona1;
+        RAISE NOTICE 'num2 = %', num2;
+        ASSERT(num2 < 2);
+        SELECT inverso INTO rinv FROM msip_trelacion 
+          WHERE id = NEW.trelacion_id;
+        RAISE NOTICE 'rinv = %', rinv;
+        ASSERT(rinv IS NOT NULL);
+        CASE num2
+          WHEN 0 THEN
+            INSERT INTO msip_persona_trelacion 
+            (persona1, persona2, trelacion_id, observaciones, created_at, updated_at)
+            VALUES (NEW.persona2, NEW.persona1, rinv, 'Inverso agregado automaticamente', NOW(), NOW());
+          ELSE -- num2 = 1
+            SELECT trelacion_id INTO rexistente FROM msip_persona_trelacion
+              WHERE persona1=NEW.persona2 AND persona2=NEW.persona1;
+            RAISE NOTICE 'rexistente = %', rexistente;
+            IF rinv <> rexistente THEN
+              UPDATE msip_persona_trelacion 
+                SET trelacion_id = rinv,
+                 observaciones = 'Inverso cambiado automaticamente (era ' ||
+                   rexistente || '). ' || COALESCE(observaciones, ''),
+                 updated_at = NOW()
+                WHERE persona1=NEW.persona2 AND persona2=NEW.persona1;
+            END IF;
+        END CASE;
+        RETURN NULL;
+      END ;
+      $$;
+
+
+--
 -- Name: msip_edad_de_fechanac_fecharef(integer, integer, integer, integer, integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.msip_edad_de_fechanac_fecharef(anionac integer, mesnac integer, dianac integer, anioref integer, mesref integer, diaref integer) RETURNS integer
     LANGUAGE sql IMMUTABLE
     AS $$ SELECT CASE WHEN anionac IS NULL THEN NULL WHEN anioref IS NULL THEN NULL WHEN anioref < anionac THEN -1 WHEN mesnac IS NOT NULL AND mesnac > 0 AND mesref IS NOT NULL AND mesref > 0 AND mesnac >= mesref THEN CASE WHEN mesnac > mesref OR (dianac IS NOT NULL AND dianac > 0 AND diaref IS NOT NULL AND diaref > 0 AND dianac > diaref) THEN anioref-anionac-1 ELSE anioref-anionac END ELSE anioref-anionac END $$;
+
+
+--
+-- Name: msip_eliminar_familiar_inverso(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.msip_eliminar_familiar_inverso() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      DECLARE
+        num2 INTEGER;
+      BEGIN
+        ASSERT(TG_OP = 'DELETE');
+        RAISE NOTICE 'Eliminando inverso de msip_persona_trelacion';
+        SELECT COUNT(*) INTO num2 FROM msip_persona_trelacion
+          WHERE persona1 = OLD.persona2 AND persona2=OLD.persona1;
+        RAISE NOTICE 'num2 = %', num2;
+        ASSERT(num2 < 2);
+        IF num2 = 1 THEN
+            DELETE FROM msip_persona_trelacion 
+            WHERE persona1 = OLD.persona2 AND persona2 = OLD.persona1;
+        END IF;
+        RETURN NULL;
+      END ;
+      $$;
 
 
 --
@@ -222,10 +299,7 @@ CREATE TABLE public.anuncioventa (
     usuario_id bigint NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    nombrecomercial character varying(255),
     ultimopesoporton_id integer,
-    referencia_para_pago character varying(64),
-    nombre_referencia character varying(255),
     enblockchain boolean DEFAULT false
 );
 
@@ -474,6 +548,38 @@ CREATE SEQUENCE public.metododepago_id_seq
 --
 
 ALTER SEQUENCE public.metododepago_id_seq OWNED BY public.metododepago.id;
+
+
+--
+-- Name: metododepago_usuario; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.metododepago_usuario (
+    id bigint NOT NULL,
+    metododepago_id integer NOT NULL,
+    usuario_id integer NOT NULL,
+    referencia_para_pago character varying(64),
+    nombre_referencia character varying(255)
+);
+
+
+--
+-- Name: metododepago_usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.metododepago_usuario_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: metododepago_usuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.metododepago_usuario_id_seq OWNED BY public.metododepago_usuario.id;
 
 
 --
@@ -1298,7 +1404,7 @@ CREATE TABLE public.msip_tclase (
 CREATE TABLE public.msip_tdocumento (
     id integer NOT NULL,
     nombre character varying(500) NOT NULL COLLATE public.es_co_utf_8,
-    sigla character varying(100),
+    sigla character varying(500) NOT NULL,
     formatoregex character varying(500),
     fechacreacion date NOT NULL,
     fechadeshabilitacion date,
@@ -1694,6 +1800,7 @@ CREATE TABLE public.usuario (
     tema_id integer,
     direccion character varying(1024),
     direccion_amigable character varying(64),
+    nombrecomercial character varying(255),
     CONSTRAINT usuario_check CHECK (((fechadeshabilitacion IS NULL) OR (fechadeshabilitacion >= fechacreacion))),
     CONSTRAINT usuario_rol_check CHECK ((rol >= 1))
 );
@@ -1718,6 +1825,13 @@ ALTER TABLE ONLY public.anuncioventa_metododepago ALTER COLUMN id SET DEFAULT ne
 --
 
 ALTER TABLE ONLY public.metododepago ALTER COLUMN id SET DEFAULT nextval('public.metododepago_id_seq'::regclass);
+
+
+--
+-- Name: metododepago_usuario id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metododepago_usuario ALTER COLUMN id SET DEFAULT nextval('public.metododepago_usuario_id_seq'::regclass);
 
 
 --
@@ -1928,6 +2042,14 @@ ALTER TABLE ONLY public.msip_etiqueta
 
 ALTER TABLE ONLY public.metododepago
     ADD CONSTRAINT metododepago_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: metododepago_usuario metododepago_usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metododepago_usuario
+    ADD CONSTRAINT metododepago_usuario_pkey PRIMARY KEY (id);
 
 
 --
@@ -2371,6 +2493,20 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 
 
 --
+-- Name: msip_persona_trelacion msip_eliminar_familiar; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER msip_eliminar_familiar AFTER DELETE ON public.msip_persona_trelacion FOR EACH ROW EXECUTE FUNCTION public.msip_eliminar_familiar_inverso();
+
+
+--
+-- Name: msip_persona_trelacion msip_insertar_familiar; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER msip_insertar_familiar AFTER INSERT OR UPDATE ON public.msip_persona_trelacion FOR EACH ROW EXECUTE FUNCTION public.msip_agregar_o_remplazar_familiar_inverso();
+
+
+--
 -- Name: msip_clase clase_id_municipio_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2507,6 +2643,14 @@ ALTER TABLE ONLY public.msip_grupo_usuario
 
 
 --
+-- Name: metododepago_usuario fk_rails_7900d012a6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metododepago_usuario
+    ADD CONSTRAINT fk_rails_7900d012a6 FOREIGN KEY (metododepago_id) REFERENCES public.metododepago(id);
+
+
+--
 -- Name: msip_orgsocial fk_rails_7bc2a60574; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2568,6 +2712,14 @@ ALTER TABLE ONLY public.msip_solicitud
 
 ALTER TABLE ONLY public.anuncioventa
     ADD CONSTRAINT fk_rails_a88d1dd357 FOREIGN KEY (ultimopesoporton_id) REFERENCES public.pesoporton(id);
+
+
+--
+-- Name: metododepago_usuario fk_rails_b37c9f9550; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metododepago_usuario
+    ADD CONSTRAINT fk_rails_b37c9f9550 FOREIGN KEY (usuario_id) REFERENCES public.usuario(id);
 
 
 --
@@ -2884,6 +3036,14 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230515141753'),
 ('20230605152216'),
 ('20230607224228'),
-('20230624120450');
+('20230613111532'),
+('20230616203948'),
+('20230622205530'),
+('20230624120450'),
+('20230625110251'),
+('20230712163859'),
+('20230722180204'),
+('20230723011110'),
+('20230927001422');
 
 

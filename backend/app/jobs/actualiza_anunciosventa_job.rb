@@ -24,7 +24,7 @@ class ActualizaAnunciosventaJob < ApplicationJob
         rm = JSON.parse(res)
         if rm['anuncioventa'] && rm['anuncioventa'].class==Hash 
           direccion = rm['anuncioventa']['direccion']
-          cantidad = rm['anuncioventa']['cantidad']
+          cantidad = rm['anuncioventa']['cantidad'] / 1000000000
           valido_hasta = rm['anuncioventa']['valido_hasta']
           usuario = Usuario.where(direccion_amigable: direccion).take
           if usuario.nil?
