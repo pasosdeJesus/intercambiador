@@ -2,5 +2,11 @@
 
 require_relative "config/environment"
 
-run Rails.application
-Rails.application.load_server
+rutarel = ENV.fetch("RUTA_RELATIVA", "/")
+if rutarel[0] != '/'
+  rutarel = "/" + rutarel
+end
+map rutarel do
+  run Rails.application
+  Rails.application.load_server
+end
